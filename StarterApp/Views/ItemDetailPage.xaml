@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:StarterApp.ViewModels"
+             x:Class="StarterApp.Views.ItemDetailPage"
+             x:DataType="viewmodels:ItemDetailViewModel"
+             Title="{Binding Item.Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Loading spinner — visible while item is loading -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center" />
+
+            <!-- Content — hidden while loading -->
+            <VerticalStackLayout IsVisible="{Binding IsBusy,
+                                     Converter={StaticResource InvertedBoolConverter}}"
+                                 Spacing="12">
+
+                <!-- Title and rate -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0"
+                           Text="{Binding Item.Title}"
+                           FontSize="22"
+                           FontAttributes="Bold" />
+                    <Label Grid.Column="1"
+                           Text="{Binding Item.FormattedRate}"
+                           FontSize="18"
+                           TextColor="Green"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Category and availability -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0"
+                           Text="{Binding Item.Category.Name}"
+                           TextColor="Gray"
+                           FontSize="14" />
+                    <Label Grid.Column="1"
+                           Text="{Binding Item.AvailabilityText}"
+                           TextColor="Gray"
+                           FontSize="14" />
+                </Grid>
+
+                <BoxView HeightRequest="1"
+                         BackgroundColor="#E0E0E0" />
+
+                <!-- Description -->
+                <Label Text="Description"
+                       FontAttributes="Bold"
+                       FontSize="16" />
+                <Label Text="{Binding Item.Description}"
+                       FontSize="14"
+                       TextColor="#333333" />
+
+                <BoxView HeightRequest="1"
+                         BackgroundColor="#E0E0E0" />
+
+                <!-- Owner -->
+                <Label Text="Listed by"
+                       FontAttributes="Bold"
+                       FontSize="16" />
+                <Label Text="{Binding Item.Owner.FullName}"
+                       FontSize="14"
+                       TextColor="Gray" />
+
+                <!-- Request rental button -->
+                <Button Text="Request Rental"
+                        Command="{Binding RequestRentalCommand}"
+                        IsVisible="{Binding Item.IsAvailable}"
+                        BackgroundColor="#512BD4"
+                        TextColor="White"
+                        Margin="0,8" />
+
+                <!-- Unavailable message -->
+                <Label Text="This item is currently unavailable."
+                       IsVisible="{Binding Item.IsAvailable,
+                           Converter={StaticResource InvertedBoolConverter}}"
+                       HorizontalOptions="Center"
+                       TextColor="Gray" />
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

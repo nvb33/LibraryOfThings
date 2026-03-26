@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:StarterApp.ViewModels"
+             x:Class="StarterApp.Views.CreateItemPage"
+             x:DataType="viewmodels:CreateItemViewModel"
+             Title="List an Item">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Error message — only visible when ErrorMessage is not empty -->
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="Red"
+                   IsVisible="{Binding ErrorMessage,
+                       Converter={StaticResource StringToBoolConverter}}" />
+
+            <!-- Title -->
+            <Label Text="Title" FontAttributes="Bold" />
+            <Entry Placeholder="e.g. Electric Drill"
+                   Text="{Binding Title, Mode=TwoWay}" />
+
+            <!-- Description -->
+            <Label Text="Description" FontAttributes="Bold" />
+            <Editor Placeholder="Describe your item..."
+                    Text="{Binding Description, Mode=TwoWay}"
+                    HeightRequest="100"
+                    AutoSize="TextChanges" />
+
+            <!-- Daily Rate -->
+            <Label Text="Daily Rate (£)" FontAttributes="Bold" />
+            <Entry Placeholder="e.g. 5.00"
+                   Text="{Binding DailyRate, Mode=TwoWay}"
+                   Keyboard="Numeric" />
+
+            <!-- Loading spinner -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center" />
+
+            <!-- Submit button — disabled while loading -->
+            <Button Text="Create Listing"
+                    Command="{Binding CreateItemCommand}"
+                    IsEnabled="{Binding IsBusy,
+                        Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White" />
+
+            <!-- Cancel button -->
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    IsEnabled="{Binding IsBusy,
+                        Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="#E0E0E0"
+                    TextColor="Black" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
