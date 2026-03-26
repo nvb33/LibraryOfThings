@@ -10,7 +10,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly AppDbContext _context;
     private User? _currentUser;
     private List<string> _currentUserRoles = new();
-
+    public string? Token => null;
     public event EventHandler<bool>? AuthenticationStateChanged;
 
     public AuthenticationService(AppDbContext context)
