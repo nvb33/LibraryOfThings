@@ -4,8 +4,6 @@ namespace StarterApp.Services;
 
 public interface IApiService
 {
-    // Auth
-    Task<string?> LoginAsync(string email, string password);
 
     // Items
     Task<List<Item>> GetItemsAsync();

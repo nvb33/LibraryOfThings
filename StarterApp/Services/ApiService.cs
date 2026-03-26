@@ -6,60 +6,46 @@ namespace StarterApp.Services;
 public class ApiService : IApiService
 {
     private readonly HttpClient _httpClient;
-    private string? _token;
+    private readonly IAuthenticationService _authService;
 
-    // The base URL for all requests
     private const string BaseUrl = "https://set09102-api.b-davison.workers.dev";
 
-    public ApiService()
+    public ApiService(IAuthenticationService authService)
     {
+        _authService = authService;
         _httpClient = new HttpClient
         {
             BaseAddress = new Uri(BaseUrl)
         };
     }
 
-    // Call this after login to include the token in all future requests
-    private void SetAuthToken(string token)
+    // Called before each authenticated request to ensure token is current
+    private void EnsureAuthHeader()
     {
-        _token = token;
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-    }
-
-    public async Task<string?> LoginAsync(string email, string password)
-    {
-        var response = await _httpClient.PostAsJsonAsync("/auth/token", new
+        var token = _authService.Token;
+        if (token != null)
         {
-            email,
-            password
-        });
-
-        if (!response.IsSuccessStatusCode)
-            return null;
-
-        // Deserialise the JSON response into an anonymous object
-        var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-
-        if (result?.Token != null)
-            SetAuthToken(result.Token);
-
-        return result?.Token;
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
     }
 
     public async Task<List<Item>> GetItemsAsync()
     {
+        EnsureAuthHeader();
         var response = await _httpClient.GetFromJsonAsync<ItemsResponse>("/items");
         return response?.Items ?? new List<Item>();
     }
 
     public async Task<Item?> GetItemAsync(int id)
     {
+        EnsureAuthHeader();
         return await _httpClient.GetFromJsonAsync<Item>($"/items/{id}");
     }
 
     public async Task<Item?> CreateItemAsync(Item item)
     {
+        EnsureAuthHeader();
         var response = await _httpClient.PostAsJsonAsync("/items", new
         {
             title = item.Title,
@@ -71,13 +57,18 @@ public class ApiService : IApiService
         });
 
         if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLine($"CreateItem failed: {response.StatusCode} - {errorContent}");
             return null;
+        }
 
         return await response.Content.ReadFromJsonAsync<Item>();
     }
 
     public async Task<Item?> UpdateItemAsync(int id, Item item)
     {
+        EnsureAuthHeader();
         var response = await _httpClient.PutAsJsonAsync($"/items/{id}", new
         {
             title = item.Title,
@@ -90,13 +81,6 @@ public class ApiService : IApiService
             return null;
 
         return await response.Content.ReadFromJsonAsync<Item>();
-    }
-
-    // Private helper classes to deserialise API responses
-    private class LoginResponse
-    {
-        public string? Token { get; set; }
-        public int UserId { get; set; }
     }
 
     private class ItemsResponse
