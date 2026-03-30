@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using StarterApp.Database.Models;
 
 namespace StarterApp.Services;
@@ -19,7 +20,6 @@ public class ApiService : IApiService
         };
     }
 
-    // Called before each authenticated request to ensure token is current
     private void EnsureAuthHeader()
     {
         var token = _authService.Token;
@@ -59,7 +59,8 @@ public class ApiService : IApiService
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            System.Diagnostics.Debug.WriteLine($"CreateItem failed: {response.StatusCode} - {errorContent}");
+            System.Diagnostics.Debug.WriteLine(
+                $"CreateItem failed: {response.StatusCode} - {errorContent}");
             return null;
         }
 
@@ -83,8 +84,23 @@ public class ApiService : IApiService
         return await response.Content.ReadFromJsonAsync<Item>();
     }
 
+    public async Task<List<Category>> GetCategoriesAsync()
+    {
+        var response = await _httpClient
+            .GetFromJsonAsync<CategoriesResponse>("/categories");
+        return response?.Categories ?? new List<Category>();
+    }
+
+    // Private helper classes to deserialise API list responses
     private class ItemsResponse
     {
+        [JsonPropertyName("items")]
         public List<Item> Items { get; set; } = new();
+    }
+
+    private class CategoriesResponse
+    {
+        [JsonPropertyName("categories")]
+        public List<Category> Categories { get; set; } = new();
     }
 }
