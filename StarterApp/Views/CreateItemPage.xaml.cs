@@ -9,4 +9,10 @@ public partial class CreateItemPage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        ((CreateItemViewModel)BindingContext).LoadCategoriesCommand.Execute(null);
+    }
 }

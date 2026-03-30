@@ -33,6 +33,13 @@
                    Text="{Binding DailyRate, Mode=TwoWay}"
                    Keyboard="Numeric" />
 
+            <!-- Category -->
+        <Label Text="Category" FontAttributes="Bold" />
+        <Picker Title="Select a category"
+        ItemsSource="{Binding Categories}"
+        SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+        ItemDisplayBinding="{Binding Name}" />
+
             <!-- Loading spinner -->
             <ActivityIndicator IsRunning="{Binding IsBusy}"
                                IsVisible="{Binding IsBusy}"

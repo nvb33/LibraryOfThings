@@ -42,9 +42,6 @@ public static class MauiProgram
         builder.Services.AddSingleton<TempViewModel>();
         builder.Services.AddTransient<TempPage>();
 
-        // Repositories
-        builder.Services.AddScoped<StarterApp.Database.Data.Repositories.IItemRepository, StarterApp.Database.Data.Repositories.ItemRepository>();
-
         // API Service (check if IApiService is already registered — if so, skip this line)
         builder.Services.AddSingleton<IApiService, ApiService>();
 
