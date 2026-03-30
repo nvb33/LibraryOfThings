@@ -40,12 +40,17 @@ public class Item
     public double Longitude { get; set; }
 
     [JsonPropertyName("averageRating")]
-    public double AverageRating { get; set; }
+    public double? AverageRating { get; set; }
+
+    [JsonPropertyName("ownerRating")]
+    public double? OwnerRating { get; set; }
 
     [JsonPropertyName("createdAt")]
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
     // Computed properties for the UI — not from the API
     public string AvailabilityText => IsAvailable ? "Available" : "Unavailable";
-    public string FormattedRate => $"£{DailyRate:F2} per day";
+    public string FormattedRating => AverageRating.HasValue 
+        ? $"{AverageRating.Value:F1} ★" 
+        : "No ratings yet";
 }
