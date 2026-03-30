@@ -1,16 +1,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
+using StarterApp.Services;
 
 namespace StarterApp.ViewModels;
 
-// QueryProperty links a URL parameter to a property
-// When you navigate to "itemdetail?id=42", ItemId gets set to 42
 [QueryProperty(nameof(ItemId), "id")]
 public partial class ItemDetailViewModel : ObservableObject
 {
-    private readonly IItemRepository _itemRepository;
+    private readonly IApiService _apiService;
 
     [ObservableProperty]
     private Item? _item;
@@ -18,7 +16,6 @@ public partial class ItemDetailViewModel : ObservableObject
     [ObservableProperty]
     private bool _isBusy;
 
-    // When ItemId is set (via navigation), load that item
     private int _itemId;
     public int ItemId
     {
@@ -26,24 +23,22 @@ public partial class ItemDetailViewModel : ObservableObject
         set
         {
             _itemId = value;
-            // Load the item as soon as we know the ID
             LoadItemCommand.Execute(null);
         }
     }
 
-    public ItemDetailViewModel(IItemRepository itemRepository)
+    public ItemDetailViewModel(IApiService apiService)
     {
-        _itemRepository = itemRepository;
+        _apiService = apiService;
     }
 
     [RelayCommand]
     private async Task LoadItemAsync()
     {
         IsBusy = true;
-
         try
         {
-            Item = await _itemRepository.GetByIdAsync(_itemId);
+            Item = await _apiService.GetItemAsync(_itemId);
         }
         finally
         {

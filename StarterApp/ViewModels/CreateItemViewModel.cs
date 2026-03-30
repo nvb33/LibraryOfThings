@@ -1,17 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
 using StarterApp.Services;
+using System.Collections.ObjectModel;
 
 namespace StarterApp.ViewModels;
 
 public partial class CreateItemViewModel : ObservableObject
 {
-    private readonly IItemRepository _itemRepository;
     private readonly IApiService _apiService;
 
-    // These bind to the form fields
     [ObservableProperty]
     private string _title = string.Empty;
 
@@ -22,24 +20,42 @@ public partial class CreateItemViewModel : ObservableObject
     private decimal _dailyRate;
 
     [ObservableProperty]
-    private int _selectedCategoryId;
-
-    [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    public CreateItemViewModel(IItemRepository itemRepository, IApiService apiService)
+    // Holds the list of categories loaded from the API
+    [ObservableProperty]
+    private ObservableCollection<Category> _categories = new();
+
+    // The category the user selected in the picker
+    [ObservableProperty]
+    private Category? _selectedCategory;
+
+    public CreateItemViewModel(IApiService apiService)
     {
-        _itemRepository = itemRepository;
         _apiService = apiService;
+    }
+
+    // Called when the page appears — loads categories from API
+    [RelayCommand]
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            var categories = await _apiService.GetCategoriesAsync();
+            Categories = new ObservableCollection<Category>(categories);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error loading categories: {ex.Message}");
+        }
     }
 
     [RelayCommand]
     private async Task CreateItemAsync()
     {
-        // Basic validation before hitting the API
         if (string.IsNullOrWhiteSpace(Title))
         {
             ErrorMessage = "Title is required.";
@@ -49,6 +65,12 @@ public partial class CreateItemViewModel : ObservableObject
         if (DailyRate <= 0)
         {
             ErrorMessage = "Daily rate must be greater than zero.";
+            return;
+        }
+
+        if (SelectedCategory == null)
+        {
+            ErrorMessage = "Please select a category.";
             return;
         }
 
@@ -62,8 +84,7 @@ public partial class CreateItemViewModel : ObservableObject
                 Title = Title,
                 Description = Description,
                 DailyRate = DailyRate,
-                CategoryId = SelectedCategoryId,
-                // Location
+                CategoryId = SelectedCategory.Id,
                 Latitude = 55.9533,
                 Longitude = -3.1883
             };
@@ -72,7 +93,6 @@ public partial class CreateItemViewModel : ObservableObject
 
             if (created != null)
             {
-                // Navigate back to the list after successful creation
                 await Shell.Current.GoToAsync("..");
             }
             else
