@@ -19,6 +19,9 @@ public partial class ItemsListViewModel : ObservableObject
     [ObservableProperty]
     private bool _isEmpty;
 
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
+
     public ItemsListViewModel(IApiService apiService)
     {
         _apiService = apiService;
@@ -41,6 +44,10 @@ public partial class ItemsListViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Error loading items: {ex.Message}");
+            IsEmpty = true;
+            // Show the actual error in the empty state label temporarily
+            // so you can see what went wrong during development
+            ErrorMessage = $"Failed to load items: {ex.Message}";
         }
         finally
         {
