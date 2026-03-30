@@ -1,33 +1,51 @@
+using System.Text.Json.Serialization;
+
 namespace StarterApp.Database.Models;
 
 public class Item
 {
-    // Primary key — Entity Framework Core recognises "Id" automatically
+    [JsonPropertyName("id")]
     public int Id { get; set; }
 
-    // Basic details
+    [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
+
+    [JsonPropertyName("dailyRate")]
     public decimal DailyRate { get; set; }
-    public bool IsAvailable { get; set; } = true;
 
-    // Location — used for the nearby search
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
-
-    // When it was created
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    // Foreign keys — relationships to other tables
+    [JsonPropertyName("categoryId")]
     public int CategoryId { get; set; }
+
+    // API returns category as a plain string e.g. "Tools"
+    [JsonPropertyName("category")]
+    public string CategoryName { get; set; } = string.Empty;
+
+    [JsonPropertyName("ownerId")]
     public int OwnerId { get; set; }
 
-    // Navigation properties — Entity Framework Core uses these to join tables
-    // "?" means nullable
-    public Category? Category { get; set; }
-    public User? Owner { get; set; }
+    // API returns owner as a plain string e.g. "Sarah Smith"
+    [JsonPropertyName("ownerName")]
+    public string OwnerName { get; set; } = string.Empty;
 
-    // A computed property — not stored in Database, just convenient for the UI
+    [JsonPropertyName("isAvailable")]
+    public bool IsAvailable { get; set; } = true;
+
+    [JsonPropertyName("latitude")]
+    public double Latitude { get; set; }
+
+    [JsonPropertyName("longitude")]
+    public double Longitude { get; set; }
+
+    [JsonPropertyName("averageRating")]
+    public double AverageRating { get; set; }
+
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; }
+
+    // Computed properties for the UI — not from the API
     public string AvailabilityText => IsAvailable ? "Available" : "Unavailable";
     public string FormattedRate => $"£{DailyRate:F2} per day";
 }

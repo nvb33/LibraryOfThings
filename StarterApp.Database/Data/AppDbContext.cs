@@ -39,16 +39,11 @@ public class AppDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
 
-    // ── New rental app tables ─────────────────────────────────────
-    public DbSet<Item> Items { get; set; }
-    public DbSet<Category> Categories { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+   protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // ── Original StarterApp configuration ─────────────────────
-
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasIndex(e => e.Email).IsUnique();
@@ -71,32 +66,14 @@ public class AppDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.RoleId }).IsUnique();
 
             entity.HasOne(ur => ur.User)
-                  .WithMany(u => u.UserRoles)
-                  .HasForeignKey(ur => ur.UserId);
+                .WithMany(u => u.UserRoles)
+                .HasForeignKey(ur => ur.UserId);
 
             entity.HasOne(ur => ur.Role)
-                  .WithMany(r => r.UserRoles)
-                  .HasForeignKey(ur => ur.RoleId);
+                .WithMany(r => r.UserRoles)
+                .HasForeignKey(ur => ur.RoleId);
         });
 
-        // ── New rental app configuration ───────────────────────────
-
-        modelBuilder.Entity<Item>()
-            .HasOne(i => i.Category)
-            .WithMany(c => c.Items)
-            .HasForeignKey(i => i.CategoryId);
-
-        modelBuilder.Entity<Item>()
-            .HasOne(i => i.Owner)
-            .WithMany(u => u.Items)
-            .HasForeignKey(i => i.OwnerId);
-
-        modelBuilder.Entity<Category>().HasData(
-            new Category { Id = 1, Name = "Tools", Slug = "tools" },
-            new Category { Id = 2, Name = "Camping", Slug = "camping" },
-            new Category { Id = 3, Name = "Sports", Slug = "sports" },
-            new Category { Id = 4, Name = "Electronics", Slug = "electronics" },
-            new Category { Id = 5, Name = "Games", Slug = "games" }
-        );
+        // Item and Category configuration removed — data comes from API now
     }
 }
