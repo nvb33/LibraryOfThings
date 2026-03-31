@@ -91,6 +91,39 @@ public class ApiService : IApiService
         return response?.Categories ?? new List<Category>();
     }
 
+    private class NearbyItemsResponse
+    {
+        [JsonPropertyName("items")]
+        public List<Item> Items { get; set; } = new();
+    }
+
+    public async Task<List<Item>> GetNearbyItemsAsync(double lat, double lon, double radiusKm = 5)
+    {
+        EnsureAuthHeader();
+        var url = $"/items/nearby?lat={lat}&lon={lon}&radius={radiusKm}";
+        System.Diagnostics.Debug.WriteLine($"Calling nearby: {url}");
+
+        try
+        {
+            // Get raw response first so we can log it
+            var rawResponse = await _httpClient.GetAsync(url);
+            var rawJson = await rawResponse.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLine($"Nearby raw response: {rawJson[..Math.Min(200, rawJson.Length)]}");
+
+            var response = await System.Text.Json.JsonSerializer.DeserializeAsync<NearbyItemsResponse>(
+                await rawResponse.Content.ReadAsStreamAsync());
+
+            System.Diagnostics.Debug.WriteLine($"Nearby items count: {response?.Items?.Count ?? 0}");
+            return response?.Items ?? new List<Item>();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Nearby deserialisation error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            return new List<Item>();
+        }
+    }
+
     // Private helper classes to deserialise API list responses
     private class ItemsResponse
     {

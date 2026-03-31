@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:StarterApp.ViewModels"
+             xmlns:models="clr-namespace:StarterApp.Database.Models;assembly=StarterApp.Database"
+             x:Class="StarterApp.Views.NearbyItemsPage"
+             x:DataType="viewmodels:NearbyItemsViewModel"
+             Title="Items Near Me">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+        <!-- Location status -->
+        <Label Grid.Row="0"
+               Text="{Binding LocationStatus}"
+               HorizontalOptions="Center"
+               TextColor="Gray"
+               FontSize="13"
+               Margin="16,8" />
+
+        <!-- Radius slider -->
+        <VerticalStackLayout Grid.Row="1" Margin="16,0">
+            <Label Text="{Binding RadiusKm, StringFormat='Search radius: {0:F0} km'}"
+                   FontAttributes="Bold" />
+            <Slider Minimum="1"
+                    Maximum="50"
+                    Value="{Binding RadiusKm, Mode=TwoWay}" />
+        </VerticalStackLayout>
+
+        <!-- Search button -->
+        <Button Grid.Row="2"
+                Text="Search Near Me"
+                Command="{Binding SearchNearbyCommand}"
+                IsEnabled="{Binding IsBusy,
+                    Converter={StaticResource InvertedBoolConverter}}"
+                BackgroundColor="#512BD4"
+                TextColor="White"
+                Margin="16,8" />
+
+        <!-- Loading spinner -->
+        <ActivityIndicator Grid.Row="3"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center" />
+
+        <!-- Error message -->
+        <Label Grid.Row="3"
+               Text="{Binding ErrorMessage}"
+               TextColor="Red"
+               IsVisible="{Binding ErrorMessage,
+                   Converter={StaticResource StringToBoolConverter}}"
+               HorizontalOptions="Center"
+               Margin="16" />
+
+        <!-- Empty state -->
+        <Label Grid.Row="4"
+               Text="{Binding LocationStatus}"
+               IsVisible="{Binding IsEmpty}"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               TextColor="Gray"
+               HorizontalTextAlignment="Center"
+               Margin="32" />
+
+        <!-- Nearby items list -->
+        <CollectionView Grid.Row="4"
+                        ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Item">
+                    <Border Margin="12,6"
+                            Padding="12"
+                            StrokeShape="RoundRectangle 8"
+                            Stroke="#E0E0E0">
+                        <Grid ColumnDefinitions="*,Auto"
+                              RowDefinitions="Auto,Auto,Auto">
+
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding Title}"
+                                   FontAttributes="Bold"
+                                   FontSize="16" />
+
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding FormattedRate}"
+                                   TextColor="Green"
+                                   FontAttributes="Bold" />
+
+                            <Label Grid.Row="1" Grid.Column="0"
+                                   Text="{Binding CategoryName}"
+                                   TextColor="Gray"
+                                   FontSize="13" />
+
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Text="{Binding AvailabilityText}"
+                                   FontSize="13"
+                                   TextColor="Gray" />
+
+                            <!-- Distance — only shown on nearby page -->
+                            <Label Grid.Row="2"
+                                   Grid.ColumnSpan="2"
+                                   Text="{Binding FormattedDistance}"
+                                   TextColor="#512BD4"
+                                   FontSize="13"
+                                   FontAttributes="Italic"
+                                   IsVisible="{Binding FormattedDistance,
+                                       Converter={StaticResource StringToBoolConverter}}" />
+
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:NearbyItemsViewModel}}, Path=NavigateToDetailCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

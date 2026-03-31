@@ -62,10 +62,16 @@ public static class MauiProgram
 
         Routing.RegisterRoute("createitem", typeof(CreateItemPage));
 
-#if DEBUG
-        builder.Logging.AddDebug();
-#endif
+        builder.Services.AddSingleton<ILocationService, LocationService>();
 
-        return builder.Build();
+        builder.Services.AddTransient<NearbyItemsViewModel>();
+        builder.Services.AddTransient<NearbyItemsPage>();
+        Routing.RegisterRoute("nearbyitems", typeof(NearbyItemsPage));
+
+    #if DEBUG
+        builder.Logging.AddDebug();
+    #endif
+
+    return builder.Build();
     }
 }

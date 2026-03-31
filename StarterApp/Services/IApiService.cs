@@ -9,4 +9,5 @@ public interface IApiService
     Task<Item?> CreateItemAsync(Item item);
     Task<Item?> UpdateItemAsync(int id, Item item);
     Task<List<Category>> GetCategoriesAsync();
+    Task<List<Item>> GetNearbyItemsAsync(double lat, double lon, double radiusKm = 5);
 }

@@ -48,6 +48,14 @@ public class Item
     [JsonPropertyName("createdAt")]
     public DateTime? CreatedAt { get; set; }
 
+    [JsonPropertyName("distance")]
+    public double? Distance { get; set; }
+
+// Only shown when distance is available (i.e. on the nearby page)
+    public string FormattedDistance => Distance.HasValue
+        ? $"{Distance.Value:F1} km away"
+        : string.Empty;
+
     // Computed properties for the UI — not from the API
     public string AvailabilityText => IsAvailable ? "Available" : "Unavailable";
     public string FormattedRating => AverageRating.HasValue 
