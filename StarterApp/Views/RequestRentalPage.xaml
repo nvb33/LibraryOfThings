@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:StarterApp.ViewModels"
+             x:Class="StarterApp.Views.RequestRentalPage"
+             x:DataType="viewmodels:RequestRentalViewModel"
+             Title="Request Rental">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Error message -->
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="Red"
+                   IsVisible="{Binding ErrorMessage,
+                       Converter={StaticResource StringToBoolConverter}}" />
+
+            <Label Text="Select Rental Dates"
+                   FontSize="18"
+                   FontAttributes="Bold" />
+
+            <!-- Start date -->
+            <Label Text="Start Date" FontAttributes="Bold" />
+            <DatePicker Date="{Binding StartDate, Mode=TwoWay}"
+                        MinimumDate="{Binding MinDate}"
+                        Format="dd MMM yyyy" />
+
+            <!-- End date -->
+            <Label Text="End Date" FontAttributes="Bold" />
+            <DatePicker Date="{Binding EndDate, Mode=TwoWay}"
+                        MinimumDate="{Binding MinDate}"
+                        Format="dd MMM yyyy" />
+
+            <!-- Loading spinner -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center" />
+
+            <!-- Submit button -->
+            <Button Text="Submit Request"
+                    Command="{Binding SubmitRentalCommand}"
+                    IsEnabled="{Binding IsBusy,
+                        Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White" />
+
+            <!-- Cancel button -->
+            <Button Text="Cancel"
+                    Command="{Binding CancelCommand}"
+                    IsEnabled="{Binding IsBusy,
+                        Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="#E0E0E0"
+                    TextColor="Black" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

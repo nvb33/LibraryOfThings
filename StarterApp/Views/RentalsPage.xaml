@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:StarterApp.ViewModels"
+             xmlns:models="clr-namespace:StarterApp.Database.Models;assembly=StarterApp.Database"
+             x:Class="StarterApp.Views.RentalsPage"
+             x:DataType="viewmodels:RentalsViewModel"
+             Title="My Rentals">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- Tab buttons -->
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,*"
+              Margin="16,8">
+            <Button Grid.Column="0"
+                    Text="My Requests"
+                    Command="{Binding ShowOutgoingCommand}"
+                    BackgroundColor="{Binding ShowingOutgoing,
+                        Converter={StaticResource BoolToColorConverter}}"
+                    TextColor="White"
+                    Margin="0,0,4,0" />
+            <Button Grid.Column="1"
+                    Text="Item Requests"
+                    Command="{Binding ShowIncomingCommand}"
+                    BackgroundColor="{Binding ShowingIncoming,
+                        Converter={StaticResource BoolToColorConverter}}"
+                    TextColor="White"
+                    Margin="4,0,0,0" />
+        </Grid>
+
+        <!-- Error message -->
+        <Label Grid.Row="1"
+               Text="{Binding ErrorMessage}"
+               TextColor="Red"
+               IsVisible="{Binding ErrorMessage,
+                   Converter={StaticResource StringToBoolConverter}}"
+               HorizontalOptions="Center"
+               Margin="16" />
+
+        <!-- Loading spinner -->
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center" />
+
+        <!-- Outgoing rentals (My Requests) -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding OutgoingRentals}"
+                        IsVisible="{Binding ShowingOutgoing}">
+            <CollectionView.EmptyView>
+                <Label Text="You haven't made any rental requests yet."
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="Gray"
+                       Margin="32" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Rental">
+                    <Border Margin="12,6" Padding="12"
+                            StrokeShape="RoundRectangle 8"
+                            Stroke="#E0E0E0">
+                        <VerticalStackLayout Spacing="4">
+
+                            <Label Text="{Binding ItemTitle}"
+                                   FontAttributes="Bold"
+                                   FontSize="16" />
+
+                            <Label Text="{Binding FormattedDates}"
+                                   TextColor="Gray"
+                                   FontSize="13" />
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding Status}"
+                                       TextColor="{Binding StatusColour}"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding FormattedPrice}"
+                                       TextColor="Green"
+                                       FontAttributes="Bold" />
+                            </Grid>
+
+                            <!-- Mark as returned — only shown when Out for Rent -->
+                            <Button Text="Mark as Returned"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=MarkReturnedCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#2196F3"
+                                    TextColor="White"
+                                    IsVisible="{Binding Status,
+                                        Converter={StaticResource EqualToStringConverter},
+                                        ConverterParameter='Out for Rent'}" />
+
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Incoming rentals (Item Requests) -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding IncomingRentals}"
+                        IsVisible="{Binding ShowingIncoming}">
+            <CollectionView.EmptyView>
+                <Label Text="No rental requests for your items yet."
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="Gray"
+                       Margin="32" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Rental">
+                    <Border Margin="12,6" Padding="12"
+                            StrokeShape="RoundRectangle 8"
+                            Stroke="#E0E0E0">
+                        <VerticalStackLayout Spacing="4">
+
+                            <Label Text="{Binding ItemTitle}"
+                                   FontAttributes="Bold"
+                                   FontSize="16" />
+
+                            <Label Text="{Binding BorrowerName}"
+                                   TextColor="Gray"
+                                   FontSize="13" />
+
+                            <Label Text="{Binding FormattedDates}"
+                                   TextColor="Gray"
+                                   FontSize="13" />
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding Status}"
+                                       TextColor="{Binding StatusColour}"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding FormattedPrice}"
+                                       TextColor="Green"
+                                       FontAttributes="Bold" />
+                            </Grid>
+
+                            <!-- Approve/Reject buttons — only shown when Requested -->
+                            <Grid ColumnDefinitions="*,*"
+                                  IsVisible="{Binding Status,
+                                      Converter={StaticResource EqualToStringConverter},
+                                      ConverterParameter='Requested'}">
+                                <Button Grid.Column="0"
+                                        Text="Approve"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=ApproveRentalCommand}"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="#4CAF50"
+                                        TextColor="White"
+                                        Margin="0,0,4,0" />
+                                <Button Grid.Column="1"
+                                        Text="Reject"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=RejectRentalCommand}"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="#F44336"
+                                        TextColor="White"
+                                        Margin="4,0,0,0" />
+                            </Grid>
+
+                            <!-- Complete button — only shown when Returned -->
+                            <Button Text="Mark as Completed"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=CompleteRentalCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#607D8B"
+                                    TextColor="White"
+                                    IsVisible="{Binding Status,
+                                        Converter={StaticResource EqualToStringConverter},
+                                        ConverterParameter='Returned'}" />
+
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>
