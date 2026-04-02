@@ -68,6 +68,15 @@ public static class MauiProgram
         builder.Services.AddTransient<NearbyItemsPage>();
         Routing.RegisterRoute("nearbyitems", typeof(NearbyItemsPage));
 
+        // Rental ViewModels and Pages
+        builder.Services.AddTransient<RequestRentalViewModel>();
+        builder.Services.AddTransient<RequestRentalPage>();
+        builder.Services.AddTransient<RentalsViewModel>();
+        builder.Services.AddTransient<RentalsPage>();
+
+        Routing.RegisterRoute("requestrental", typeof(RequestRentalPage));
+        Routing.RegisterRoute("rentals", typeof(RentalsPage));
+
     #if DEBUG
         builder.Logging.AddDebug();
     #endif
