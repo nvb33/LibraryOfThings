@@ -10,4 +10,10 @@ public interface IApiService
     Task<Item?> UpdateItemAsync(int id, Item item);
     Task<List<Category>> GetCategoriesAsync();
     Task<List<Item>> GetNearbyItemsAsync(double lat, double lon, double radiusKm = 5);
+
+    // Rentals
+    Task<Rental?> CreateRentalAsync(int itemId, string startDate, string endDate);
+    Task<List<Rental>> GetOutgoingRentalsAsync();
+    Task<List<Rental>> GetIncomingRentalsAsync();
+    Task<bool> UpdateRentalStatusAsync(int rentalId, string status);
 }

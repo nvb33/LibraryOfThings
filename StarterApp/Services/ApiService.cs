@@ -124,6 +124,64 @@ public class ApiService : IApiService
         }
     }
 
+    public async Task<Rental?> CreateRentalAsync(int itemId, string startDate, string endDate)
+    {
+        EnsureAuthHeader();
+        var response = await _httpClient.PostAsJsonAsync("/rentals", new
+        {
+            itemId,
+            startDate,
+            endDate
+        });
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLine($"CreateRental failed: {response.StatusCode} - {error}");
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<Rental>();
+    }
+
+    public async Task<List<Rental>> GetOutgoingRentalsAsync()
+    {
+        EnsureAuthHeader();
+        var response = await _httpClient.GetFromJsonAsync<RentalsResponse>("/rentals/outgoing");
+        return response?.Rentals ?? new List<Rental>();
+    }
+
+    public async Task<List<Rental>> GetIncomingRentalsAsync()
+    {
+        EnsureAuthHeader();
+        var response = await _httpClient.GetFromJsonAsync<RentalsResponse>("/rentals/incoming");
+        return response?.Rentals ?? new List<Rental>();
+    }
+
+    public async Task<bool> UpdateRentalStatusAsync(int rentalId, string status)
+    {
+        EnsureAuthHeader();
+        var response = await _httpClient.PatchAsJsonAsync($"/rentals/{rentalId}/status", new
+        {
+            status
+        });
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLine($"UpdateRentalStatus failed: {response.StatusCode} - {error}");
+            return false;
+        }
+
+        return true;
+    }
+
+    private class RentalsResponse
+    {
+        [JsonPropertyName("rentals")]
+        public List<Rental> Rentals { get; set; } = new();
+    }
+
     // Private helper classes to deserialise API list responses
     private class ItemsResponse
     {
