@@ -12,24 +12,26 @@
                      Command="{Binding NavigateToCreateCommand}" />
     </ContentPage.ToolbarItems>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
-        <!-- Loading spinner -->
+        <!-- Loading spinner — Row 0 -->
         <ActivityIndicator Grid.Row="0"
                            IsRunning="{Binding IsBusy}"
                            IsVisible="{Binding IsBusy}"
                            HorizontalOptions="Center"
                            Margin="0,8" />
 
-        <Label Text="{Binding ErrorMessage}"
+        <!-- Error message — Row 1 -->
+        <Label Grid.Row="1"
+               Text="{Binding ErrorMessage}"
                TextColor="Red"
                IsVisible="{Binding ErrorMessage,
-               Converter={StaticResource StringToBoolConverter}}"
+                   Converter={StaticResource StringToBoolConverter}}"
                HorizontalOptions="Center"
                Margin="16" />
 
-        <!-- Empty state -->
-        <Label Grid.Row="1"
+        <!-- Empty state — Row 2 -->
+        <Label Grid.Row="2"
                Text="No items found. Add one using the button above."
                IsVisible="{Binding IsEmpty}"
                HorizontalOptions="Center"
@@ -38,8 +40,8 @@
                HorizontalTextAlignment="Center"
                Margin="32" />
 
-        <!-- Items list -->
-        <CollectionView Grid.Row="1"
+        <!-- Items list — Row 2, fills remaining space -->
+        <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Items}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Item">
@@ -60,8 +62,9 @@
                                    TextColor="Green"
                                    FontAttributes="Bold" />
 
+                            <!-- Fixed: was Category.Name, now CategoryName -->
                             <Label Grid.Row="1" Grid.Column="0"
-                                   Text="{Binding Category.Name}"
+                                   Text="{Binding CategoryName}"
                                    TextColor="Gray"
                                    FontSize="13" />
 
