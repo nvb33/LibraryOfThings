@@ -47,12 +47,8 @@ public partial class ItemDetailViewModel : ObservableObject
     }
 
     [RelayCommand]
-private async Task RequestRentalAsync()
-{
-    // Route will be registered once RentalRequestPage is built
-    await Shell.Current.DisplayAlertAsync(
-        "Coming Soon",
-        "Rental requests will be available shortly.",
-        "OK");
+    private async Task RequestRentalAsync()
+    {
+        await Shell.Current.GoToAsync($"requestrental?itemId={_itemId}");
     }
 }
