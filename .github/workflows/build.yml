@@ -26,3 +26,12 @@ jobs:
 
       - name: Run tests
         run: dotnet test ./StarterApp.Tests/StarterApp.Tests.csproj --framework net10.0
+
+      - name: Build APK
+        run: dotnet build ./StarterApp/StarterApp.csproj -f net10.0-android -c Release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: starterapp-release
+          path: StarterApp/bin/Release/net10.0-android/*.apk
