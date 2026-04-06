@@ -207,7 +207,7 @@ public class ApiService : IApiService
         return new ItemReviewsResult
         {
             Reviews = response.Reviews,
-            AverageRating = response.AverageRating,
+            AverageRating = response.AverageRating ?? 0.0,
             TotalReviews = response.TotalReviews
         };
     }
@@ -243,7 +243,7 @@ public class ApiService : IApiService
         public List<Review> Reviews { get; set; } = new();
 
         [JsonPropertyName("averageRating")]
-        public double AverageRating { get; set; }
+        public double? AverageRating { get; set; }
 
         [JsonPropertyName("totalReviews")]
         public int TotalReviews { get; set; }

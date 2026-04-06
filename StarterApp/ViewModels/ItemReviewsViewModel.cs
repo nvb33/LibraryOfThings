@@ -60,7 +60,7 @@ public partial class ItemReviewsViewModel : ObservableObject
             var totalReviews = result.TotalReviews;
 
             Reviews = new ObservableCollection<Review>(reviews);
-            AverageRating = averageRating;
+            AverageRating = averageRating ?? 0.0;
             TotalReviews = totalReviews;
             OnPropertyChanged(nameof(FormattedAverageRating));
         }

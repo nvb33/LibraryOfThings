@@ -26,6 +26,6 @@ public interface IApiService
 public class ItemReviewsResult
 {
     public List<Review> Reviews { get; set; } = new();
-    public double AverageRating { get; set; }
+    public double? AverageRating { get; set; }
     public int TotalReviews { get; set; }
 }
