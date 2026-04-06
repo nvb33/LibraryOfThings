@@ -77,6 +77,15 @@ public static class MauiProgram
         Routing.RegisterRoute("requestrental", typeof(RequestRentalPage));
         Routing.RegisterRoute("rentals", typeof(RentalsPage));
 
+        // Review ViewModels and Pages
+        builder.Services.AddTransient<SubmitReviewViewModel>();
+        builder.Services.AddTransient<SubmitReviewPage>();
+        builder.Services.AddTransient<ItemReviewsViewModel>();
+        builder.Services.AddTransient<ItemReviewsPage>();
+
+        Routing.RegisterRoute("submitreview", typeof(SubmitReviewPage));
+        Routing.RegisterRoute("itemreviews", typeof(ItemReviewsPage));
+
     #if DEBUG
         builder.Logging.AddDebug();
     #endif

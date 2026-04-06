@@ -4,19 +4,27 @@ namespace StarterApp.Converters;
 
 public class BoolToColorConverter : IValueConverter
 {
-    // Active colour — used when bool is true
     public Color TrueColor { get; set; } = Color.FromArgb("#512BD4");
-
-    // Inactive colour — used when bool is false
     public Color FalseColor { get; set; } = Color.FromArgb("#9E9E9E");
 
     public object Convert(object? value, Type targetType,
         object? parameter, CultureInfo culture)
     {
-        if (value is bool b)
-            return b ? TrueColor : FalseColor;
+        bool b = value is bool boolVal && boolVal;
 
-        return FalseColor;
+        // Support inline parameter format "TrueColor|FalseColor"
+        if (parameter is string paramStr && paramStr.Contains('|'))
+        {
+            var parts = paramStr.Split('|');
+            if (parts.Length == 2)
+            {
+                var trueColor = Color.FromArgb(parts[0]);
+                var falseColor = Color.FromArgb(parts[1]);
+                return b ? trueColor : falseColor;
+            }
+        }
+
+        return b ? TrueColor : FalseColor;
     }
 
     public object ConvertBack(object? value, Type targetType,

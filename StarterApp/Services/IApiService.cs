@@ -16,4 +16,16 @@ public interface IApiService
     Task<List<Rental>> GetOutgoingRentalsAsync();
     Task<List<Rental>> GetIncomingRentalsAsync();
     Task<bool> UpdateRentalStatusAsync(int rentalId, string status);
+
+    // Reviews
+    Task<Review?> SubmitReviewAsync(int rentalId, int rating, string comment);
+    Task<ItemReviewsResult> GetItemReviewsAsync(int itemId);
+    Task<double> GetItemAverageRatingAsync(int itemId);
+}
+
+public class ItemReviewsResult
+{
+    public List<Review> Reviews { get; set; } = new();
+    public double AverageRating { get; set; }
+    public int TotalReviews { get; set; }
 }

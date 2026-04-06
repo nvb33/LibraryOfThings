@@ -176,6 +176,48 @@ public class ApiService : IApiService
         return true;
     }
 
+    public async Task<Review?> SubmitReviewAsync(int rentalId, int rating, string comment)
+    {
+        EnsureAuthHeader();
+        var response = await _httpClient.PostAsJsonAsync("/reviews", new
+        {
+            rentalId,
+            rating,
+            comment
+        });
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            System.Diagnostics.Debug.WriteLine($"SubmitReview failed: {response.StatusCode} - {error}");
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync<Review>();
+    }
+
+    public async Task<ItemReviewsResult> GetItemReviewsAsync(int itemId)
+    {
+        EnsureAuthHeader();
+        var response = await _httpClient.GetFromJsonAsync<ReviewsResponse>($"/items/{itemId}/reviews");
+
+        if (response == null)
+            return new ItemReviewsResult();
+
+        return new ItemReviewsResult
+        {
+            Reviews = response.Reviews,
+            AverageRating = response.AverageRating,
+            TotalReviews = response.TotalReviews
+        };
+    }
+
+    public async Task<double> GetItemAverageRatingAsync(int itemId)
+    {
+        var response = await _httpClient.GetFromJsonAsync<ReviewsResponse>($"/items/{itemId}/reviews");
+        return response?.AverageRating ?? 0.0;
+    }
+
     private class RentalsResponse
     {
         [JsonPropertyName("rentals")]
@@ -193,5 +235,17 @@ public class ApiService : IApiService
     {
         [JsonPropertyName("categories")]
         public List<Category> Categories { get; set; } = new();
+    }
+
+    private class ReviewsResponse
+    {
+        [JsonPropertyName("reviews")]
+        public List<Review> Reviews { get; set; } = new();
+
+        [JsonPropertyName("averageRating")]
+        public double AverageRating { get; set; }
+
+        [JsonPropertyName("totalReviews")]
+        public int TotalReviews { get; set; }
     }
 }

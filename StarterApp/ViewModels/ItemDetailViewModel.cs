@@ -51,4 +51,10 @@ public partial class ItemDetailViewModel : ObservableObject
     {
         await Shell.Current.GoToAsync($"requestrental?itemId={_itemId}");
     }
+
+    [RelayCommand]
+    private async Task NavigateToReviewsAsync()
+    {
+        await Shell.Current.GoToAsync($"itemreviews?itemId={_itemId}");
+    }
 }

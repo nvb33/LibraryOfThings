@@ -123,4 +123,11 @@ public partial class RentalsViewModel : ObservableObject
             IsBusy = false;
         }
     }
+
+    [RelayCommand]
+    private async Task NavigateToReviewAsync(Rental rental)
+    {
+        await Shell.Current.GoToAsync(
+            $"submitreview?rentalId={rental.Id}&itemTitle={Uri.EscapeDataString(rental.ItemTitle)}");
+    }
 }

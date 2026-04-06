@@ -75,6 +75,13 @@
                         TextColor="White"
                         Margin="0,8" />
 
+                <!-- See reviews button -->
+                <Button Text="See Reviews"
+                        Command="{Binding NavigateToReviewsCommand}"
+                        BackgroundColor="#E0E0E0"
+                        TextColor="Black"
+                        Margin="16,0" />
+
                 <!-- Unavailable message -->
                 <Label Text="This item is currently unavailable."
                        IsVisible="{Binding Item.IsAvailable,

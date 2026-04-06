@@ -91,6 +91,16 @@
                                         Converter={StaticResource EqualToStringConverter},
                                         ConverterParameter='Out for Rent'}" />
 
+                             <!-- Leave a Review — only shown when Completed -->
+                            <Button Text="Leave a Review"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=NavigateToReviewCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#512BD4"
+                                    TextColor="White"
+                                    IsVisible="{Binding Status,
+                                        Converter={StaticResource EqualToStringConverter},
+                                        ConverterParameter='Completed'}" />
+
                         </VerticalStackLayout>
                     </Border>
                 </DataTemplate>
