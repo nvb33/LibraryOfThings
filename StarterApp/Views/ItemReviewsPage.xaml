@@ -68,7 +68,7 @@
                                        FontSize="12" />
                             </Grid>
 
-                            <Label Text="{Binding StarDisplay}"
+                            <Label Text="{Binding FormattedRating}"
                                    TextColor="#FFD700"
                                    FontSize="18" />
 
