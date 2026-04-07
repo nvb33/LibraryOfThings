@@ -24,36 +24,31 @@
                 <Button Text="★"
                         FontSize="32"
                         BackgroundColor="Transparent"
-                        TextColor="{Binding IsStar1, Converter={StaticResource BoolToColorConverter},
-                            ConverterParameter='#FFD700|#CCCCCC'}"
+                        TextColor="{Binding Star1Colour}"
                         Command="{Binding SetRatingCommand}"
                         CommandParameter="1" />
                 <Button Text="★"
                         FontSize="32"
                         BackgroundColor="Transparent"
-                        TextColor="{Binding IsStar2, Converter={StaticResource BoolToColorConverter},
-                            ConverterParameter='#FFD700|#CCCCCC'}"
+                        TextColor="{Binding Star2Colour}"
                         Command="{Binding SetRatingCommand}"
                         CommandParameter="2" />
                 <Button Text="★"
                         FontSize="32"
                         BackgroundColor="Transparent"
-                        TextColor="{Binding IsStar3, Converter={StaticResource BoolToColorConverter},
-                            ConverterParameter='#FFD700|#CCCCCC'}"
+                        TextColor="{Binding Star3Colour}"
                         Command="{Binding SetRatingCommand}"
                         CommandParameter="3" />
                 <Button Text="★"
                         FontSize="32"
                         BackgroundColor="Transparent"
-                        TextColor="{Binding IsStar4, Converter={StaticResource BoolToColorConverter},
-                            ConverterParameter='#FFD700|#CCCCCC'}"
+                        TextColor="{Binding Star4Colour}"
                         Command="{Binding SetRatingCommand}"
                         CommandParameter="4" />
                 <Button Text="★"
                         FontSize="32"
                         BackgroundColor="Transparent"
-                        TextColor="{Binding IsStar5, Converter={StaticResource BoolToColorConverter},
-                            ConverterParameter='#FFD700|#CCCCCC'}"
+                        TextColor="{Binding Star5Colour}"
                         Command="{Binding SetRatingCommand}"
                         CommandParameter="5" />
             </HorizontalStackLayout>

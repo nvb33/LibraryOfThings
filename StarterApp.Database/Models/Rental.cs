@@ -57,4 +57,12 @@ public class Rental
         "Completed" => "#607D8B",   // grey
         _ => "#607D8B"
     };
+
+    public bool IsOverdue =>
+    Status == "Out for Rent" &&
+    DateTime.TryParse(EndDate, out var end) &&
+    end.Date < DateTime.Today;
+
+    public string OverdueMessage =>
+        IsOverdue ? $"Overdue since {DateTime.Parse(EndDate):dd MMM yyyy}" : string.Empty;
 }

@@ -29,12 +29,11 @@ public partial class SubmitReviewViewModel : ObservableObject
     private string _errorMessage = string.Empty;
 
     // Star display properties
-    public bool Star1Selected => Rating >= 1;
-    public bool Star2Selected => Rating >= 2;
-    public bool Star3Selected => Rating >= 3;
-    public bool Star4Selected => Rating >= 4;
-    public bool Star5Selected => Rating >= 5;
-
+    public string Star1Colour => Rating >= 1 ? "#FFD700" : "#CCCCCC";
+    public string Star2Colour => Rating >= 2 ? "#FFD700" : "#CCCCCC";
+    public string Star3Colour => Rating >= 3 ? "#FFD700" : "#CCCCCC";
+    public string Star4Colour => Rating >= 4 ? "#FFD700" : "#CCCCCC";
+    public string Star5Colour => Rating >= 5 ? "#FFD700" : "#CCCCCC";
     public SubmitReviewViewModel(IApiService apiService)
     {
         _apiService = apiService;
@@ -46,11 +45,11 @@ public partial class SubmitReviewViewModel : ObservableObject
         if (int.TryParse(value, out int rating))
         {
             Rating = rating;
-            OnPropertyChanged(nameof(Star1Selected));
-            OnPropertyChanged(nameof(Star2Selected));
-            OnPropertyChanged(nameof(Star3Selected));
-            OnPropertyChanged(nameof(Star4Selected));
-            OnPropertyChanged(nameof(Star5Selected));
+            OnPropertyChanged(nameof(Star1Colour));
+            OnPropertyChanged(nameof(Star2Colour));
+            OnPropertyChanged(nameof(Star3Colour));
+            OnPropertyChanged(nameof(Star4Colour));
+            OnPropertyChanged(nameof(Star5Colour));
         }
     }
 
