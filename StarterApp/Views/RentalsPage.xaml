@@ -169,6 +169,16 @@
                                         Margin="4,0,0,0" />
                             </Grid>
 
+                            <!-- Mark as Out for Rent — only shown when Approved -->
+                            <Button Text="Mark as Out for Rent"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=MarkOutForRentCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#2196F3"
+                                    TextColor="White"
+                                    IsVisible="{Binding Status,
+                                        Converter={StaticResource EqualToStringConverter},
+                                        ConverterParameter='Approved'}" />
+
                             <!-- Complete button — only shown when Returned -->
                             <Button Text="Mark as Completed"
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=CompleteRentalCommand}"

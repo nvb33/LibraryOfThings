@@ -87,6 +87,12 @@ public partial class RentalsViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task MarkOutForRentAsync(Rental rental)
+    {
+        await UpdateStatusAsync(rental, "Out for Rent");
+    }
+
+    [RelayCommand]
     private async Task MarkReturnedAsync(Rental rental)
     {
         await UpdateStatusAsync(rental, "Returned");
