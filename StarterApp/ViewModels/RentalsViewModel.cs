@@ -19,6 +19,8 @@ public partial class RentalsViewModel : ObservableObject
     [ObservableProperty]
     private bool _isBusy;
 
+    public bool IsNotBusy => !IsBusy;
+
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
