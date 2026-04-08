@@ -1,7 +1,22 @@
 namespace StarterApp.Services;
 
+/// <summary>
+/// Provides the device's current geographic location using the MAUI Geolocation API.
+/// Currently returns hardcoded Edinburgh coordinates for testing purposes.
+/// </summary>
 public class LocationService : ILocationService
 {
+    /// <summary>
+    /// Retrieves the device's current GPS coordinates.
+    /// </summary>
+    /// <remarks>
+    /// Currently returns hardcoded Edinburgh coordinates (55.9533, -3.1883) for testing.
+    /// The full GPS implementation using Geolocation.GetLocationAsync is available
+    /// in the commented-out code below and should be enabled before production use.
+    /// </remarks>
+    /// <returns>
+    /// A tuple containing Latitude and Longitude, or null if location is unavailable.
+    /// </returns>
     public async Task<(double Latitude, double Longitude)?> GetCurrentLocationAsync()
     {
         // Temporary: hardcoded Edinburgh coordinates for emulator testing

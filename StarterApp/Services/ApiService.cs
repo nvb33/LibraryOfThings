@@ -4,6 +4,12 @@ using StarterApp.Database.Models;
 
 namespace StarterApp.Services;
 
+/// <summary>
+/// Implements <see cref="IApiService"/> by communicating with the remote REST API
+/// over HTTPS using JWT bearer token authentication.
+/// All methods call <see cref="EnsureAuthHeader"/> before making requests to ensure
+/// the current session token is attached to every HTTP request.
+/// </summary>
 public class ApiService : IApiService
 {
     private readonly HttpClient _httpClient;
@@ -11,6 +17,10 @@ public class ApiService : IApiService
 
     private const string BaseUrl = "https://set09102-api.b-davison.workers.dev";
 
+    /// <summary>
+    /// Initialises a new instance of <see cref="ApiService"/> with the provided authentication service.
+    /// </summary>
+    /// <param name="authService">The authentication service used to retrieve the current JWT token.</param>
     public ApiService(IAuthenticationService authService)
     {
         _authService = authService;
@@ -20,6 +30,10 @@ public class ApiService : IApiService
         };
     }
 
+    /// <summary>
+    /// Ensures the HTTP client's Authorization header is set to the current JWT bearer token.
+    /// Called before every API request to guarantee authentication is attached.
+    /// </summary>
     private void EnsureAuthHeader()
     {
         var token = _authService.Token;
@@ -30,6 +44,7 @@ public class ApiService : IApiService
         }
     }
 
+    /// <inheritdoc/>
     public async Task<List<Item>> GetItemsAsync()
     {
         EnsureAuthHeader();
@@ -37,12 +52,14 @@ public class ApiService : IApiService
         return response?.Items ?? new List<Item>();
     }
 
+    /// <inheritdoc/>
     public async Task<Item?> GetItemAsync(int id)
     {
         EnsureAuthHeader();
         return await _httpClient.GetFromJsonAsync<Item>($"/items/{id}");
     }
 
+    /// <inheritdoc/>
     public async Task<Item?> CreateItemAsync(Item item)
     {
         EnsureAuthHeader();
@@ -67,6 +84,7 @@ public class ApiService : IApiService
         return await response.Content.ReadFromJsonAsync<Item>();
     }
 
+    /// <inheritdoc/>
     public async Task<Item?> UpdateItemAsync(int id, Item item)
     {
         EnsureAuthHeader();
@@ -84,6 +102,7 @@ public class ApiService : IApiService
         return await response.Content.ReadFromJsonAsync<Item>();
     }
 
+    /// <inheritdoc/>
     public async Task<List<Category>> GetCategoriesAsync()
     {
         var response = await _httpClient
@@ -91,12 +110,7 @@ public class ApiService : IApiService
         return response?.Categories ?? new List<Category>();
     }
 
-    private class NearbyItemsResponse
-    {
-        [JsonPropertyName("items")]
-        public List<Item> Items { get; set; } = new();
-    }
-
+    /// <inheritdoc/>
     public async Task<List<Item>> GetNearbyItemsAsync(double lat, double lon, double radiusKm = 5)
     {
         EnsureAuthHeader();
@@ -105,10 +119,10 @@ public class ApiService : IApiService
 
         try
         {
-            // Get raw response first so we can log it
             var rawResponse = await _httpClient.GetAsync(url);
             var rawJson = await rawResponse.Content.ReadAsStringAsync();
-            System.Diagnostics.Debug.WriteLine($"Nearby raw response: {rawJson[..Math.Min(200, rawJson.Length)]}");
+            System.Diagnostics.Debug.WriteLine(
+                $"Nearby raw response: {rawJson[..Math.Min(200, rawJson.Length)]}");
 
             var response = await System.Text.Json.JsonSerializer.DeserializeAsync<NearbyItemsResponse>(
                 await rawResponse.Content.ReadAsStreamAsync());
@@ -124,6 +138,7 @@ public class ApiService : IApiService
         }
     }
 
+    /// <inheritdoc/>
     public async Task<Rental?> CreateRentalAsync(int itemId, string startDate, string endDate)
     {
         EnsureAuthHeader();
@@ -144,6 +159,7 @@ public class ApiService : IApiService
         return await response.Content.ReadFromJsonAsync<Rental>();
     }
 
+    /// <inheritdoc/>
     public async Task<List<Rental>> GetOutgoingRentalsAsync()
     {
         EnsureAuthHeader();
@@ -151,6 +167,7 @@ public class ApiService : IApiService
         return response?.Rentals ?? new List<Rental>();
     }
 
+    /// <inheritdoc/>
     public async Task<List<Rental>> GetIncomingRentalsAsync()
     {
         EnsureAuthHeader();
@@ -158,6 +175,7 @@ public class ApiService : IApiService
         return response?.Rentals ?? new List<Rental>();
     }
 
+    /// <inheritdoc/>
     public async Task<bool> UpdateRentalStatusAsync(int rentalId, string status)
     {
         EnsureAuthHeader();
@@ -169,13 +187,15 @@ public class ApiService : IApiService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
-            System.Diagnostics.Debug.WriteLine($"UpdateRentalStatus failed: {response.StatusCode} - {error}");
+            System.Diagnostics.Debug.WriteLine(
+                $"UpdateRentalStatus failed: {response.StatusCode} - {error}");
             return false;
         }
 
         return true;
     }
 
+    /// <inheritdoc/>
     public async Task<Review?> SubmitReviewAsync(int rentalId, int rating, string comment)
     {
         EnsureAuthHeader();
@@ -196,6 +216,7 @@ public class ApiService : IApiService
         return await response.Content.ReadFromJsonAsync<Review>();
     }
 
+    /// <inheritdoc/>
     public async Task<ItemReviewsResult> GetItemReviewsAsync(int itemId)
     {
         EnsureAuthHeader();
@@ -212,6 +233,7 @@ public class ApiService : IApiService
         };
     }
 
+    /// <inheritdoc/>
     public async Task<double> GetItemAverageRatingAsync(int itemId)
     {
         var response = await _httpClient.GetFromJsonAsync<ReviewsResponse>($"/items/{itemId}/reviews");
@@ -224,7 +246,6 @@ public class ApiService : IApiService
         public List<Rental> Rentals { get; set; } = new();
     }
 
-    // Private helper classes to deserialise API list responses
     private class ItemsResponse
     {
         [JsonPropertyName("items")]
@@ -235,6 +256,12 @@ public class ApiService : IApiService
     {
         [JsonPropertyName("categories")]
         public List<Category> Categories { get; set; } = new();
+    }
+
+    private class NearbyItemsResponse
+    {
+        [JsonPropertyName("items")]
+        public List<Item> Items { get; set; } = new();
     }
 
     private class ReviewsResponse
