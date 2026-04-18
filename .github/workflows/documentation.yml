@@ -29,6 +29,7 @@ jobs:
           GENERATE_LATEX         = NO
           HTML_OUTPUT            = .
           HAVE_DOT               = YES
+          USE_MDFILE_AS_MAINPAGE = README.md
           QUIET                  = YES
           EOF
 
