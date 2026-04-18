@@ -19,6 +19,15 @@ jobs:
       - name: Generate Doxyfile
         run: doxygen -g
 
+      - name: Configure Doxyfile
+        run: |
+          sed -i 's|^PROJECT_NAME.*|PROJECT_NAME = "Library of Things"|' Doxyfile
+          sed -i 's|^INPUT .*|INPUT = StarterApp StarterApp.Database|' Doxyfile
+          sed -i 's|^RECURSIVE.*|RECURSIVE = YES|' Doxyfile
+          sed -i 's|^EXTRACT_ALL.*|EXTRACT_ALL = YES|' Doxyfile
+          sed -i 's|^FILE_PATTERNS.*|FILE_PATTERNS = *.cs|' Doxyfile
+          sed -i 's|^GENERATE_LATEX.*|GENERATE_LATEX = NO|' Doxyfile
+
       - name: Generate Doxygen Documentation
         run: doxygen .
 
