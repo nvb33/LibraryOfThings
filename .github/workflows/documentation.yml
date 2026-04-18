@@ -14,22 +14,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Doxygen
-        run: sudo apt-get install doxygen -y
+        run: sudo apt-get install -y doxygen graphviz
 
-      - name: Generate Doxyfile
-        run: doxygen -g
-
-      - name: Configure Doxyfile
+      - name: Create Doxyfile
         run: |
-          sed -i 's|^PROJECT_NAME.*|PROJECT_NAME = "Library of Things"|' Doxyfile
-          sed -i 's|^INPUT .*|INPUT = StarterApp StarterApp.Database|' Doxyfile
-          sed -i 's|^RECURSIVE.*|RECURSIVE = YES|' Doxyfile
-          sed -i 's|^EXTRACT_ALL.*|EXTRACT_ALL = YES|' Doxyfile
-          sed -i 's|^FILE_PATTERNS.*|FILE_PATTERNS = *.cs|' Doxyfile
-          sed -i 's|^GENERATE_LATEX.*|GENERATE_LATEX = NO|' Doxyfile
+          cat > Doxyfile << 'EOF'
+          PROJECT_NAME           = "Library of Things"
+          OUTPUT_DIRECTORY       = html
+          INPUT                  = StarterApp StarterApp.Database
+          RECURSIVE              = YES
+          EXTRACT_ALL            = YES
+          FILE_PATTERNS          = *.cs
+          GENERATE_HTML          = YES
+          GENERATE_LATEX         = NO
+          HTML_OUTPUT            = .
+          HAVE_DOT               = YES
+          QUIET                  = YES
+          EOF
 
       - name: Generate Doxygen Documentation
-        run: doxygen .
+        run: doxygen Doxyfile
 
       - name: Upload documentation as artifact
         uses: actions/upload-artifact@v4
