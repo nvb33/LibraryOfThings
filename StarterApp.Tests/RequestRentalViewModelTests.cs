@@ -1,18 +1,19 @@
 using Moq;
-using StarterApp.Services;
+using StarterApp.Database.Data.Repositories;
+using StarterApp.Database.Models;
 using StarterApp.ViewModels;
 
 namespace StarterApp.Tests;
 
 public class RequestRentalViewModelTests
 {
-    private readonly Mock<IApiService> _mockApiService;
+    private readonly Mock<IRentalRepository> _mockRentalRepository;
     private readonly RequestRentalViewModel _viewModel;
 
     public RequestRentalViewModelTests()
     {
-        _mockApiService = new Mock<IApiService>();
-        _viewModel = new RequestRentalViewModel(_mockApiService.Object);
+        _mockRentalRepository = new Mock<IRentalRepository>();
+        _viewModel = new RequestRentalViewModel(_mockRentalRepository.Object);
     }
 
     [Fact]
@@ -75,35 +76,38 @@ public class RequestRentalViewModelTests
     }
 
     [Fact]
-    public async Task SubmitRental_WhenValidDates_CallsApiService()
+    public async Task SubmitRental_WhenValidDates_CallsRepository()
     {
         // Arrange
         _viewModel.ItemId = 1;
         _viewModel.StartDate = DateTime.Today.AddDays(1);
         _viewModel.EndDate = DateTime.Today.AddDays(3);
-        _mockApiService
-            .Setup(s => s.CreateRentalAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((StarterApp.Database.Models.Rental?)null);
+        _mockRentalRepository
+            .Setup(r => r.AddAsync(It.IsAny<Rental>()))
+            .ReturnsAsync((Rental?)null);
 
         // Act
         await _viewModel.SubmitRentalCommand.ExecuteAsync(null);
 
         // Assert
-        _mockApiService.Verify(
-            s => s.CreateRentalAsync(1, It.IsAny<string>(), It.IsAny<string>()),
+        _mockRentalRepository.Verify(
+            r => r.AddAsync(It.Is<Rental>(rental =>
+                rental.ItemId == 1 &&
+                rental.StartDate == DateTime.Today.AddDays(1).ToString("yyyy-MM-dd") &&
+                rental.EndDate == DateTime.Today.AddDays(3).ToString("yyyy-MM-dd"))),
             Times.Once);
     }
 
     [Fact]
-    public async Task SubmitRental_WhenApiFails_SetsErrorMessage()
+    public async Task SubmitRental_WhenRepositoryReturnsNull_SetsErrorMessage()
     {
         // Arrange
         _viewModel.ItemId = 1;
         _viewModel.StartDate = DateTime.Today.AddDays(1);
         _viewModel.EndDate = DateTime.Today.AddDays(3);
-        _mockApiService
-            .Setup(s => s.CreateRentalAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((StarterApp.Database.Models.Rental?)null);
+        _mockRentalRepository
+            .Setup(r => r.AddAsync(It.IsAny<Rental>()))
+            .ReturnsAsync((Rental?)null);
 
         // Act
         await _viewModel.SubmitRentalCommand.ExecuteAsync(null);

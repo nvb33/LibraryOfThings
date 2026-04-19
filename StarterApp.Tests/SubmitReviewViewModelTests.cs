@@ -1,18 +1,19 @@
 using Moq;
-using StarterApp.Services;
+using StarterApp.Database.Data.Repositories;
+using StarterApp.Database.Models;
 using StarterApp.ViewModels;
 
 namespace StarterApp.Tests;
 
 public class SubmitReviewViewModelTests
 {
-    private readonly Mock<IApiService> _mockApiService;
+    private readonly Mock<IReviewRepository> _mockReviewRepository;
     private readonly SubmitReviewViewModel _viewModel;
 
     public SubmitReviewViewModelTests()
     {
-        _mockApiService = new Mock<IApiService>();
-        _viewModel = new SubmitReviewViewModel(_mockApiService.Object);
+        _mockReviewRepository = new Mock<IReviewRepository>();
+        _viewModel = new SubmitReviewViewModel(_mockReviewRepository.Object);
     }
 
     [Fact]
@@ -75,35 +76,38 @@ public class SubmitReviewViewModelTests
     }
 
     [Fact]
-    public async Task SubmitReview_WhenValidInput_CallsApiService()
+    public async Task SubmitReview_WhenValidInput_CallsRepository()
     {
         // Arrange
         _viewModel.RentalId = 1;
         _viewModel.Rating = 4;
         _viewModel.Comment = "Great item!";
-        _mockApiService
-            .Setup(s => s.SubmitReviewAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
-            .ReturnsAsync((StarterApp.Database.Models.Review?)null);
+        _mockReviewRepository
+            .Setup(r => r.AddAsync(It.IsAny<Review>()))
+            .ReturnsAsync((Review?)null);
 
         // Act
         await _viewModel.SubmitReviewCommand.ExecuteAsync(null);
 
         // Assert
-        _mockApiService.Verify(
-            s => s.SubmitReviewAsync(1, 4, "Great item!"),
+        _mockReviewRepository.Verify(
+            r => r.AddAsync(It.Is<Review>(review =>
+                review.RentalId == 1 &&
+                review.Rating == 4 &&
+                review.Comment == "Great item!")),
             Times.Once);
     }
 
     [Fact]
-    public async Task SubmitReview_WhenApiFails_SetsErrorMessage()
+    public async Task SubmitReview_WhenRepositoryReturnsNull_SetsErrorMessage()
     {
         // Arrange
         _viewModel.RentalId = 1;
         _viewModel.Rating = 4;
         _viewModel.Comment = "Great item!";
-        _mockApiService
-            .Setup(s => s.SubmitReviewAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
-            .ReturnsAsync((StarterApp.Database.Models.Review?)null);
+        _mockReviewRepository
+            .Setup(r => r.AddAsync(It.IsAny<Review>()))
+            .ReturnsAsync((Review?)null);
 
         // Act
         await _viewModel.SubmitReviewCommand.ExecuteAsync(null);
