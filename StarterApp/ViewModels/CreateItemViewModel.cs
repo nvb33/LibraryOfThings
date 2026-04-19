@@ -1,18 +1,18 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
-using StarterApp.Services;
 using System.Collections.ObjectModel;
 
 namespace StarterApp.ViewModels;
 
 /// <summary>
 /// ViewModel for the Create Item page, handling input validation and
-/// submission of a new item listing to the API.
+/// submission of a new item listing via the repository.
 /// </summary>
 public partial class CreateItemViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IItemRepository _itemRepository;
 
     /// <summary>Gets or sets the title of the new item.</summary>
     [ObservableProperty]
@@ -34,7 +34,7 @@ public partial class CreateItemViewModel : ObservableObject
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    /// <summary>Gets or sets the list of categories loaded from the API for the category picker.</summary>
+    /// <summary>Gets or sets the list of categories loaded from the repository for the category picker.</summary>
     [ObservableProperty]
     private ObservableCollection<Category> _categories = new();
 
@@ -45,22 +45,21 @@ public partial class CreateItemViewModel : ObservableObject
     /// <summary>
     /// Initialises a new instance of <see cref="CreateItemViewModel"/>.
     /// </summary>
-    /// <param name="apiService">The API service used to load categories and create items.</param>
-    public CreateItemViewModel(IApiService apiService)
+    /// <param name="itemRepository">The repository used to load categories and create items.</param>
+    public CreateItemViewModel(IItemRepository itemRepository)
     {
-        _apiService = apiService;
+        _itemRepository = itemRepository;
     }
 
     /// <summary>
-    /// Loads the available categories from the API for display in the category picker.
-    /// Called when the page appears.
+    /// Loads the available categories from the repository for the category picker.
     /// </summary>
     [RelayCommand]
     private async Task LoadCategoriesAsync()
     {
         try
         {
-            var categories = await _apiService.GetCategoriesAsync();
+            var categories = await _itemRepository.GetCategoriesAsync();
             Categories = new ObservableCollection<Category>(categories);
         }
         catch (Exception ex)
@@ -70,7 +69,7 @@ public partial class CreateItemViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Validates the form inputs and creates a new item listing via the API.
+    /// Validates the form inputs and creates a new item listing via the repository.
     /// Navigates back on success, or sets an error message on failure.
     /// </summary>
     [RelayCommand]
@@ -109,7 +108,7 @@ public partial class CreateItemViewModel : ObservableObject
                 Longitude = -3.1883
             };
 
-            var created = await _apiService.CreateItemAsync(newItem);
+            var created = await _itemRepository.AddAsync(newItem);
 
             if (created != null)
             {

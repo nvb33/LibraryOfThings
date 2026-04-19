@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
 using StarterApp.Services;
 using System.Collections.ObjectModel;
@@ -8,11 +9,11 @@ namespace StarterApp.ViewModels;
 
 /// <summary>
 /// ViewModel for the Items Near Me page, allowing users to search for
-/// available items within a configurable radius of their current location.
+/// available rental items within a configurable radius of their current location.
 /// </summary>
 public partial class NearbyItemsViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IItemRepository _itemRepository;
     private readonly ILocationService _locationService;
 
     /// <summary>Gets or sets the collection of nearby items returned by the search.</summary>
@@ -35,25 +36,24 @@ public partial class NearbyItemsViewModel : ObservableObject
     [ObservableProperty]
     private double _radiusKm = 5.0;
 
-    /// <summary>Gets or sets the status message displayed to the user during and after a search.</summary>
+    /// <summary>Gets or sets the status message displayed during and after a search.</summary>
     [ObservableProperty]
     private string _locationStatus = "Tap 'Search' to find items near you";
 
     /// <summary>
     /// Initialises a new instance of <see cref="NearbyItemsViewModel"/>.
     /// </summary>
-    /// <param name="apiService">The API service used to retrieve nearby items.</param>
-    /// <param name="locationService">The location service used to obtain the device's coordinates.</param>
-    public NearbyItemsViewModel(IApiService apiService, ILocationService locationService)
+    /// <param name="itemRepository">The repository used to retrieve nearby items.</param>
+    /// <param name="locationService">The location service used to obtain device coordinates.</param>
+    public NearbyItemsViewModel(IItemRepository itemRepository, ILocationService locationService)
     {
-        _apiService = apiService;
+        _itemRepository = itemRepository;
         _locationService = locationService;
     }
 
     /// <summary>
     /// Retrieves the device's current location and searches for items within
     /// the configured radius. Updates the Items collection with results.
-    /// Skips execution if a search is already in progress.
     /// </summary>
     [RelayCommand]
     private async Task SearchNearbyAsync()
@@ -83,8 +83,8 @@ public partial class NearbyItemsViewModel : ObservableObject
             LocationStatus = $"Step 3: Got location {lat:F4},{lon:F4}. Calling API...";
             await Task.Delay(500);
 
-            var items = await _apiService.GetNearbyItemsAsync(lat, lon, RadiusKm);
-            LocationStatus = $"Step 4: API returned {items.Count} items";
+            var items = await _itemRepository.GetNearbyAsync(lat, lon, RadiusKm);
+            LocationStatus = $"Step 4: Repository returned {items.Count()} items";
             await Task.Delay(500);
 
             Items = new ObservableCollection<Item>(items);

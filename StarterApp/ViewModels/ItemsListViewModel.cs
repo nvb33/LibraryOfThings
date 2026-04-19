@@ -1,20 +1,20 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
-using StarterApp.Services;
 using System.Collections.ObjectModel;
 
 namespace StarterApp.ViewModels;
 
 /// <summary>
 /// ViewModel for the Items List page, loading and displaying all available
-/// rental items from the API with navigation to item detail and creation.
+/// rental items from the repository with navigation to item detail and creation.
 /// </summary>
 public partial class ItemsListViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IItemRepository _itemRepository;
 
-    /// <summary>Gets or sets the collection of items loaded from the API.</summary>
+    /// <summary>Gets or sets the collection of items loaded from the repository.</summary>
     [ObservableProperty]
     private ObservableCollection<Item> _items = new();
 
@@ -33,14 +33,14 @@ public partial class ItemsListViewModel : ObservableObject
     /// <summary>
     /// Initialises a new instance of <see cref="ItemsListViewModel"/>.
     /// </summary>
-    /// <param name="apiService">The API service used to retrieve the items list.</param>
-    public ItemsListViewModel(IApiService apiService)
+    /// <param name="itemRepository">The repository used to retrieve items.</param>
+    public ItemsListViewModel(IItemRepository itemRepository)
     {
-        _apiService = apiService;
+        _itemRepository = itemRepository;
     }
 
     /// <summary>
-    /// Loads all available items from the API.
+    /// Loads all available items from the repository.
     /// Skips execution if a load is already in progress.
     /// </summary>
     [RelayCommand]
@@ -53,7 +53,7 @@ public partial class ItemsListViewModel : ObservableObject
 
         try
         {
-            var items = await _apiService.GetItemsAsync();
+            var items = await _itemRepository.GetAllAsync();
             Items = new ObservableCollection<Item>(items);
             IsEmpty = !Items.Any();
         }

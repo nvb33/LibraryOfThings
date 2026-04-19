@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
-using StarterApp.Services;
 
 namespace StarterApp.ViewModels;
 
@@ -12,7 +12,7 @@ namespace StarterApp.ViewModels;
 [QueryProperty(nameof(ItemId), "id")]
 public partial class ItemDetailViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IItemRepository _itemRepository;
 
     /// <summary>Gets or sets the item currently being displayed.</summary>
     [ObservableProperty]
@@ -41,14 +41,14 @@ public partial class ItemDetailViewModel : ObservableObject
     /// <summary>
     /// Initialises a new instance of <see cref="ItemDetailViewModel"/>.
     /// </summary>
-    /// <param name="apiService">The API service used to retrieve item details.</param>
-    public ItemDetailViewModel(IApiService apiService)
+    /// <param name="itemRepository">The repository used to retrieve item details.</param>
+    public ItemDetailViewModel(IItemRepository itemRepository)
     {
-        _apiService = apiService;
+        _itemRepository = itemRepository;
     }
 
     /// <summary>
-    /// Loads the full details of the current item from the API.
+    /// Loads the full details of the current item from the repository.
     /// </summary>
     [RelayCommand]
     private async Task LoadItemAsync()
@@ -56,7 +56,7 @@ public partial class ItemDetailViewModel : ObservableObject
         IsBusy = true;
         try
         {
-            Item = await _apiService.GetItemAsync(_itemId);
+            Item = await _itemRepository.GetByIdAsync(_itemId);
         }
         finally
         {

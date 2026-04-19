@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using StarterApp.Database.Data.Repositories;
+using StarterApp.Data.Repositories;
 using StarterApp.ViewModels;
 using StarterApp.Database.Data;
 using StarterApp.Views;
@@ -44,6 +46,11 @@ public static class MauiProgram
 
         // API Service (check if IApiService is already registered — if so, skip this line)
         builder.Services.AddSingleton<IApiService, ApiService>();
+
+        // Repository registrations
+        builder.Services.AddTransient<IItemRepository, ItemRepository>();
+        builder.Services.AddTransient<IRentalRepository, RentalRepository>();
+        builder.Services.AddTransient<IReviewRepository, ReviewRepository>();
 
         // Item ViewModels and Pages
         builder.Services.AddTransient<ItemsListViewModel>();

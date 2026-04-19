@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
-using StarterApp.Services;
 using System.Collections.ObjectModel;
 
 namespace StarterApp.ViewModels;
@@ -12,7 +12,7 @@ namespace StarterApp.ViewModels;
 /// </summary>
 public partial class RentalsViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IRentalRepository _rentalRepository;
 
     /// <summary>Gets or sets the collection of rentals where the current user is the borrower.</summary>
     [ObservableProperty]
@@ -43,15 +43,13 @@ public partial class RentalsViewModel : ObservableObject
     /// <summary>
     /// Initialises a new instance of <see cref="RentalsViewModel"/>.
     /// </summary>
-    /// <param name="apiService">The API service used to retrieve and update rental data.</param>
-    public RentalsViewModel(IApiService apiService)
+    /// <param name="rentalRepository">The repository used to retrieve and update rental data.</param>
+    public RentalsViewModel(IRentalRepository rentalRepository)
     {
-        _apiService = apiService;
+        _rentalRepository = rentalRepository;
     }
 
-    /// <summary>
-    /// Switches the active tab to outgoing rentals (My Requests).
-    /// </summary>
+    /// <summary>Switches the active tab to outgoing rentals.</summary>
     [RelayCommand]
     private void ShowOutgoing()
     {
@@ -59,9 +57,7 @@ public partial class RentalsViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowingIncoming));
     }
 
-    /// <summary>
-    /// Switches the active tab to incoming rentals (Item Requests).
-    /// </summary>
+    /// <summary>Switches the active tab to incoming rentals.</summary>
     [RelayCommand]
     private void ShowIncoming()
     {
@@ -70,8 +66,7 @@ public partial class RentalsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Loads both outgoing and incoming rentals from the API.
-    /// Skips execution if a load is already in progress.
+    /// Loads both outgoing and incoming rentals from the repository.
     /// </summary>
     [RelayCommand]
     private async Task LoadRentalsAsync()
@@ -81,10 +76,10 @@ public partial class RentalsViewModel : ObservableObject
         ErrorMessage = string.Empty;
         try
         {
-            var outgoing = await _apiService.GetOutgoingRentalsAsync();
+            var outgoing = await _rentalRepository.GetOutgoingAsync();
             OutgoingRentals = new ObservableCollection<Rental>(outgoing);
 
-            var incoming = await _apiService.GetIncomingRentalsAsync();
+            var incoming = await _rentalRepository.GetIncomingAsync();
             IncomingRentals = new ObservableCollection<Rental>(incoming);
         }
         catch (Exception ex)
@@ -98,53 +93,35 @@ public partial class RentalsViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Approves an incoming rental request. Only the item owner can perform this action.
-    /// </summary>
-    /// <param name="rental">The rental to approve.</param>
+    /// <summary>Approves an incoming rental request.</summary>
     [RelayCommand]
     private async Task ApproveRentalAsync(Rental rental)
     {
         await UpdateStatusAsync(rental, "Approved");
     }
 
-    /// <summary>
-    /// Rejects an incoming rental request. Only the item owner can perform this action.
-    /// </summary>
-    /// <param name="rental">The rental to reject.</param>
+    /// <summary>Rejects an incoming rental request.</summary>
     [RelayCommand]
     private async Task RejectRentalAsync(Rental rental)
     {
         await UpdateStatusAsync(rental, "Rejected");
     }
 
-    /// <summary>
-    /// Marks an approved rental as Out for Rent, indicating the item has been handed over.
-    /// Only the item owner can perform this action.
-    /// </summary>
-    /// <param name="rental">The rental to mark as out for rent.</param>
+    /// <summary>Marks an approved rental as Out for Rent.</summary>
     [RelayCommand]
     private async Task MarkOutForRentAsync(Rental rental)
     {
         await UpdateStatusAsync(rental, "Out for Rent");
     }
 
-    /// <summary>
-    /// Marks an active rental as Returned, indicating the item has been given back.
-    /// Only the borrower can perform this action.
-    /// </summary>
-    /// <param name="rental">The rental to mark as returned.</param>
+    /// <summary>Marks an active rental as Returned.</summary>
     [RelayCommand]
     private async Task MarkReturnedAsync(Rental rental)
     {
         await UpdateStatusAsync(rental, "Returned");
     }
 
-    /// <summary>
-    /// Marks a returned rental as Completed, confirming the item is in good condition.
-    /// Only the item owner can perform this action.
-    /// </summary>
-    /// <param name="rental">The rental to mark as completed.</param>
+    /// <summary>Marks a returned rental as Completed.</summary>
     [RelayCommand]
     private async Task CompleteRentalAsync(Rental rental)
     {
@@ -152,16 +129,14 @@ public partial class RentalsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Sends a status update request to the API and reloads rentals on success.
+    /// Sends a status update to the repository and reloads rentals on success.
     /// </summary>
-    /// <param name="rental">The rental whose status is being updated.</param>
-    /// <param name="newStatus">The new status value to apply.</param>
     private async Task UpdateStatusAsync(Rental rental, string newStatus)
     {
         IsBusy = true;
         try
         {
-            var success = await _apiService.UpdateRentalStatusAsync(rental.Id, newStatus);
+            var success = await _rentalRepository.UpdateStatusAsync(rental.Id, newStatus);
             if (success)
             {
                 await LoadRentalsAsync();
@@ -181,10 +156,7 @@ public partial class RentalsViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Navigates to the Submit Review page for a completed rental.
-    /// </summary>
-    /// <param name="rental">The completed rental to review.</param>
+    /// <summary>Navigates to the Submit Review page for a completed rental.</summary>
     [RelayCommand]
     private async Task NavigateToReviewAsync(Rental rental)
     {

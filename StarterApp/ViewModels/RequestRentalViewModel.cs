@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using StarterApp.Services;
+using StarterApp.Database.Data.Repositories;
+using StarterApp.Database.Models;
 
 namespace StarterApp.ViewModels;
 
@@ -11,17 +12,17 @@ namespace StarterApp.ViewModels;
 [QueryProperty(nameof(ItemId), "itemId")]
 public partial class RequestRentalViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IRentalRepository _rentalRepository;
 
     /// <summary>Gets or sets the unique identifier of the item to be rented.</summary>
     [ObservableProperty]
     private int _itemId;
 
-    /// <summary>Gets or sets the desired start date of the rental. Defaults to tomorrow.</summary>
+    /// <summary>Gets or sets the desired start date. Defaults to tomorrow.</summary>
     [ObservableProperty]
     private DateTime _startDate = DateTime.Today.AddDays(1);
 
-    /// <summary>Gets or sets the desired end date of the rental. Defaults to two days from now.</summary>
+    /// <summary>Gets or sets the desired end date. Defaults to two days from now.</summary>
     [ObservableProperty]
     private DateTime _endDate = DateTime.Today.AddDays(2);
 
@@ -33,21 +34,20 @@ public partial class RequestRentalViewModel : ObservableObject
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    /// <summary>Gets the minimum selectable date for the date pickers, which is tomorrow.</summary>
+    /// <summary>Gets the minimum selectable date, which is tomorrow.</summary>
     public DateTime MinDate => DateTime.Today.AddDays(1);
 
     /// <summary>
     /// Initialises a new instance of <see cref="RequestRentalViewModel"/>.
     /// </summary>
-    /// <param name="apiService">The API service used to submit the rental request.</param>
-    public RequestRentalViewModel(IApiService apiService)
+    /// <param name="rentalRepository">The repository used to submit rental requests.</param>
+    public RequestRentalViewModel(IRentalRepository rentalRepository)
     {
-        _apiService = apiService;
+        _rentalRepository = rentalRepository;
     }
 
     /// <summary>
-    /// Validates the selected dates and submits a rental request to the API.
-    /// Navigates back on success, or sets an error message on failure.
+    /// Validates the selected dates and submits a rental request via the repository.
     /// </summary>
     [RelayCommand]
     private async Task SubmitRentalAsync()
@@ -63,13 +63,16 @@ public partial class RequestRentalViewModel : ObservableObject
 
         try
         {
-            var rental = await _apiService.CreateRentalAsync(
-                ItemId,
-                StartDate.ToString("yyyy-MM-dd"),
-                EndDate.ToString("yyyy-MM-dd")
-            );
+            var rental = new Rental
+            {
+                ItemId = ItemId,
+                StartDate = StartDate.ToString("yyyy-MM-dd"),
+                EndDate = EndDate.ToString("yyyy-MM-dd")
+            };
 
-            if (rental != null)
+            var created = await _rentalRepository.AddAsync(rental);
+
+            if (created != null)
             {
                 await Shell.Current.DisplayAlert(
                     "Request Sent",
@@ -94,9 +97,7 @@ public partial class RequestRentalViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Navigates back to the previous page without submitting a request.
-    /// </summary>
+    /// <summary>Navigates back without submitting a request.</summary>
     [RelayCommand]
     private async Task CancelAsync()
     {

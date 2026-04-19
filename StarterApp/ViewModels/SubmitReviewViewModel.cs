@@ -1,24 +1,25 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using StarterApp.Services;
+using StarterApp.Database.Data.Repositories;
+using StarterApp.Database.Models;
 
 namespace StarterApp.ViewModels;
 
 /// <summary>
 /// ViewModel for the Submit Review page, allowing a borrower to rate
-/// and optionally comment on a completed rental.
+/// and comment on a completed rental.
 /// </summary>
 [QueryProperty(nameof(RentalId), "rentalId")]
 [QueryProperty(nameof(ItemTitle), "itemTitle")]
 public partial class SubmitReviewViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IReviewRepository _reviewRepository;
 
     /// <summary>Gets or sets the unique identifier of the completed rental being reviewed.</summary>
     [ObservableProperty]
     private int _rentalId;
 
-    /// <summary>Gets or sets the title of the item being reviewed, displayed in the page heading.</summary>
+    /// <summary>Gets or sets the title of the item being reviewed.</summary>
     [ObservableProperty]
     private string _itemTitle = string.Empty;
 
@@ -56,16 +57,13 @@ public partial class SubmitReviewViewModel : ObservableObject
     /// <summary>
     /// Initialises a new instance of <see cref="SubmitReviewViewModel"/>.
     /// </summary>
-    /// <param name="apiService">The API service used to submit the review.</param>
-    public SubmitReviewViewModel(IApiService apiService)
+    /// <param name="reviewRepository">The repository used to submit reviews.</param>
+    public SubmitReviewViewModel(IReviewRepository reviewRepository)
     {
-        _apiService = apiService;
+        _reviewRepository = reviewRepository;
     }
 
-    /// <summary>
-    /// Sets the current star rating and notifies the UI to update all star colours.
-    /// </summary>
-    /// <param name="value">The rating value as a string, expected to be "1" through "5".</param>
+    /// <summary>Sets the current star rating and updates star colours.</summary>
     [RelayCommand]
     private void SetRating(string value)
     {
@@ -81,8 +79,7 @@ public partial class SubmitReviewViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Validates the rating and comment, then submits the review to the API.
-    /// Navigates back on success, or sets an error message on failure.
+    /// Validates and submits the review via the repository.
     /// </summary>
     [RelayCommand]
     private async Task SubmitReviewAsync()
@@ -104,9 +101,16 @@ public partial class SubmitReviewViewModel : ObservableObject
 
         try
         {
-            var review = await _apiService.SubmitReviewAsync(RentalId, Rating, Comment);
+            var review = new Review
+            {
+                RentalId = RentalId,
+                Rating = Rating,
+                Comment = Comment
+            };
 
-            if (review != null)
+            var created = await _reviewRepository.AddAsync(review);
+
+            if (created != null)
             {
                 await Shell.Current.DisplayAlert(
                     "Review Submitted",
@@ -129,9 +133,7 @@ public partial class SubmitReviewViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Navigates back to the previous page without submitting a review.
-    /// </summary>
+    /// <summary>Navigates back without submitting a review.</summary>
     [RelayCommand]
     private async Task CancelAsync()
     {
