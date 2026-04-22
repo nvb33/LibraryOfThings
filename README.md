@@ -180,3 +180,19 @@ docker-compose down
 Connection string (development):
 
 Host=localhost;Database=starterdb;Username=student_user;Password=password123;
+## Code Quality
+
+This project uses SonarCloud for continuous code quality analysis.
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=nvb33_LibraryOfThings&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=nvb33_LibraryOfThings)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=nvb33_LibraryOfThings&metric=coverage)](https://sonarcloud.io/summary/new_code?id=nvb33_LibraryOfThings)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=nvb33_LibraryOfThings&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=nvb33_LibraryOfThings)
+
+SonarCloud analyses every pull request automatically, checking for:
+- Code smells and maintainability issues
+- Security vulnerabilities
+- Test coverage
+- Duplicated code
+
+To view the full quality report visit:
+https://sonarcloud.io/project/overview?id=nvb33_LibraryOfThings
