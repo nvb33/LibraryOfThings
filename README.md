@@ -180,3 +180,5 @@ docker-compose down
 Connection string (development):
 
 Host=localhost;Database=starterdb;Username=student_user;Password=password123;
+
+## Testing
