@@ -9,11 +9,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+
+      - name: Install SonarCloud scanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Install coverage tool
+        run: dotnet tool install --global dotnet-coverage
 
       - name: Restore workloads
         run: dotnet workload restore ./StarterApp/StarterApp.csproj
@@ -21,8 +29,38 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore ./StarterApp.Tests/StarterApp.Tests.csproj
 
+      - name: Begin SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet-sonarscanner begin \
+            /k:"nvb33_LibraryOfThings" \
+            /o:"nvb33" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.exclusions="**/obj/**,**/bin/**,**/Migrations/**,**/*.xaml"
+
       - name: Build project
         run: dotnet build ./StarterApp/StarterApp.csproj --framework net10.0
 
-      - name: Run tests
-        run: dotnet test ./StarterApp.Tests/StarterApp.Tests.csproj --framework net10.0
+      - name: Run tests with coverage
+        run: |
+          dotnet-coverage collect \
+            "dotnet test ./StarterApp.Tests/StarterApp.Tests.csproj --framework net10.0" \
+            -f xml \
+            -o coverage.opencover.xml
+
+      - name: End SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Build APK
+        run: dotnet build ./StarterApp/StarterApp.csproj -f net10.0-android -c Release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: starterapp-release
+          path: StarterApp/bin/Release/net10.0-android/*.apk
