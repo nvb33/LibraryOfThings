@@ -46,6 +46,8 @@ public static class MauiProgram
 
         // API Service (check if IApiService is already registered — if so, skip this line)
         builder.Services.AddSingleton<IApiService, ApiService>();
+        builder.Services.AddTransient<IRentalService, RentalService>();
+        builder.Services.AddTransient<IReviewService, ReviewService>();
 
         // Repository registrations
         builder.Services.AddTransient<IItemRepository, ItemRepository>();

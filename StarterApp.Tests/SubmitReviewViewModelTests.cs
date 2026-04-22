@@ -1,25 +1,26 @@
 using Moq;
-using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
+using StarterApp.Services;
 using StarterApp.ViewModels;
 
 namespace StarterApp.Tests;
 
 public class SubmitReviewViewModelTests
 {
-    private readonly Mock<IReviewRepository> _mockReviewRepository;
+    private readonly Mock<IReviewService> _mockReviewService;
     private readonly SubmitReviewViewModel _viewModel;
 
     public SubmitReviewViewModelTests()
     {
-        _mockReviewRepository = new Mock<IReviewRepository>();
-        _viewModel = new SubmitReviewViewModel(_mockReviewRepository.Object);
+        _mockReviewService = new Mock<IReviewService>();
+        _mockReviewService.Setup(s => s.IsValidRating(It.IsAny<int>()))
+            .Returns((int r) => r >= 1 && r <= 5);
+        _viewModel = new SubmitReviewViewModel(_mockReviewService.Object);
     }
 
     [Fact]
     public void Rating_DefaultsToFive()
     {
-        // Assert
         Assert.Equal(5, _viewModel.Rating);
     }
 
@@ -39,7 +40,7 @@ public class SubmitReviewViewModelTests
         // Act
         _viewModel.SetRatingCommand.Execute("3");
 
-        // Assert — stars 1-3 should be gold, 4-5 should be grey
+        // Assert
         Assert.Equal("#FFD700", _viewModel.Star1Colour);
         Assert.Equal("#FFD700", _viewModel.Star2Colour);
         Assert.Equal("#FFD700", _viewModel.Star3Colour);
@@ -76,37 +77,43 @@ public class SubmitReviewViewModelTests
     }
 
     [Fact]
-    public async Task SubmitReview_WhenValidInput_CallsRepository()
+    public async Task SubmitReview_WhenValidInput_CallsReviewService()
     {
         // Arrange
         _viewModel.RentalId = 1;
         _viewModel.Rating = 4;
         _viewModel.Comment = "Great item!";
-        _mockReviewRepository
-            .Setup(r => r.AddAsync(It.IsAny<Review>()))
+        _mockReviewService
+            .Setup(s => s.SubmitReviewAsync(
+                It.IsAny<Rental>(),
+                It.IsAny<int>(),
+                It.IsAny<string>()))
             .ReturnsAsync((Review?)null);
 
         // Act
         await _viewModel.SubmitReviewCommand.ExecuteAsync(null);
 
         // Assert
-        _mockReviewRepository.Verify(
-            r => r.AddAsync(It.Is<Review>(review =>
-                review.RentalId == 1 &&
-                review.Rating == 4 &&
-                review.Comment == "Great item!")),
+        _mockReviewService.Verify(
+            s => s.SubmitReviewAsync(
+                It.Is<Rental>(r => r.Id == 1),
+                4,
+                "Great item!"),
             Times.Once);
     }
 
     [Fact]
-    public async Task SubmitReview_WhenRepositoryReturnsNull_SetsErrorMessage()
+    public async Task SubmitReview_WhenServiceReturnsNull_SetsErrorMessage()
     {
         // Arrange
         _viewModel.RentalId = 1;
         _viewModel.Rating = 4;
         _viewModel.Comment = "Great item!";
-        _mockReviewRepository
-            .Setup(r => r.AddAsync(It.IsAny<Review>()))
+        _mockReviewService
+            .Setup(s => s.SubmitReviewAsync(
+                It.IsAny<Rental>(),
+                It.IsAny<int>(),
+                It.IsAny<string>()))
             .ReturnsAsync((Review?)null);
 
         // Act

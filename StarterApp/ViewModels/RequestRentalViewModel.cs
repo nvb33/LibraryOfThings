@@ -1,18 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using StarterApp.Database.Data.Repositories;
-using StarterApp.Database.Models;
+using StarterApp.Services;
 
 namespace StarterApp.ViewModels;
 
 /// <summary>
 /// ViewModel for the Request Rental page, allowing a borrower to select
-/// rental dates and submit a rental request for a specific item.
+/// rental dates and submit a rental request via the rental service.
 /// </summary>
 [QueryProperty(nameof(ItemId), "itemId")]
 public partial class RequestRentalViewModel : ObservableObject
 {
-    private readonly IRentalRepository _rentalRepository;
+    private readonly IRentalService _rentalService;
 
     /// <summary>Gets or sets the unique identifier of the item to be rented.</summary>
     [ObservableProperty]
@@ -26,7 +25,7 @@ public partial class RequestRentalViewModel : ObservableObject
     [ObservableProperty]
     private DateTime _endDate = DateTime.Today.AddDays(2);
 
-    /// <summary>Gets or sets a value indicating whether an API operation is in progress.</summary>
+    /// <summary>Gets or sets a value indicating whether an operation is in progress.</summary>
     [ObservableProperty]
     private bool _isBusy;
 
@@ -40,14 +39,15 @@ public partial class RequestRentalViewModel : ObservableObject
     /// <summary>
     /// Initialises a new instance of <see cref="RequestRentalViewModel"/>.
     /// </summary>
-    /// <param name="rentalRepository">The repository used to submit rental requests.</param>
-    public RequestRentalViewModel(IRentalRepository rentalRepository)
+    /// <param name="rentalService">The service providing rental business logic.</param>
+    public RequestRentalViewModel(IRentalService rentalService)
     {
-        _rentalRepository = rentalRepository;
+        _rentalService = rentalService;
     }
 
     /// <summary>
-    /// Validates the selected dates and submits a rental request via the repository.
+    /// Validates the selected dates and submits a rental request via the service.
+    /// Business rule validation is performed in RentalService before the API call.
     /// </summary>
     [RelayCommand]
     private async Task SubmitRentalAsync()
@@ -63,16 +63,10 @@ public partial class RequestRentalViewModel : ObservableObject
 
         try
         {
-            var rental = new Rental
-            {
-                ItemId = ItemId,
-                StartDate = StartDate.ToString("yyyy-MM-dd"),
-                EndDate = EndDate.ToString("yyyy-MM-dd")
-            };
+            var rental = await _rentalService.CreateRentalAsync(
+                ItemId, StartDate, EndDate);
 
-            var created = await _rentalRepository.AddAsync(rental);
-
-            if (created != null)
+            if (rental != null)
             {
                 await Shell.Current.DisplayAlert(
                     "Request Sent",
@@ -86,6 +80,10 @@ public partial class RequestRentalViewModel : ObservableObject
                 ErrorMessage = "Failed to submit rental request. " +
                                "The item may not be available for these dates.";
             }
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = ex.Message;
         }
         catch (Exception ex)
         {

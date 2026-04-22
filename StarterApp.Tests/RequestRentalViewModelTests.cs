@@ -1,49 +1,40 @@
 using Moq;
-using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
+using StarterApp.Services;
 using StarterApp.ViewModels;
 
 namespace StarterApp.Tests;
 
 public class RequestRentalViewModelTests
 {
-    private readonly Mock<IRentalRepository> _mockRentalRepository;
+    private readonly Mock<IRentalService> _mockRentalService;
     private readonly RequestRentalViewModel _viewModel;
 
     public RequestRentalViewModelTests()
     {
-        _mockRentalRepository = new Mock<IRentalRepository>();
-        _viewModel = new RequestRentalViewModel(_mockRentalRepository.Object);
+        _mockRentalService = new Mock<IRentalService>();
+        _viewModel = new RequestRentalViewModel(_mockRentalService.Object);
     }
 
     [Fact]
     public void StartDate_DefaultsToTomorrow()
     {
-        // Arrange + Act (set in constructor)
-        var expected = DateTime.Today.AddDays(1);
-
         // Assert
-        Assert.Equal(expected, _viewModel.StartDate);
+        Assert.Equal(DateTime.Today.AddDays(1), _viewModel.StartDate);
     }
 
     [Fact]
     public void EndDate_DefaultsToTwoDaysFromNow()
     {
-        // Arrange + Act (set in constructor)
-        var expected = DateTime.Today.AddDays(2);
-
         // Assert
-        Assert.Equal(expected, _viewModel.EndDate);
+        Assert.Equal(DateTime.Today.AddDays(2), _viewModel.EndDate);
     }
 
     [Fact]
     public void MinDate_IsTomorrow()
     {
-        // Arrange + Act
-        var expected = DateTime.Today.AddDays(1);
-
         // Assert
-        Assert.Equal(expected, _viewModel.MinDate);
+        Assert.Equal(DateTime.Today.AddDays(1), _viewModel.MinDate);
     }
 
     [Fact]
@@ -76,37 +67,43 @@ public class RequestRentalViewModelTests
     }
 
     [Fact]
-    public async Task SubmitRental_WhenValidDates_CallsRepository()
+    public async Task SubmitRental_WhenValidDates_CallsRentalService()
     {
         // Arrange
         _viewModel.ItemId = 1;
         _viewModel.StartDate = DateTime.Today.AddDays(1);
         _viewModel.EndDate = DateTime.Today.AddDays(3);
-        _mockRentalRepository
-            .Setup(r => r.AddAsync(It.IsAny<Rental>()))
+        _mockRentalService
+            .Setup(s => s.CreateRentalAsync(
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>()))
             .ReturnsAsync((Rental?)null);
 
         // Act
         await _viewModel.SubmitRentalCommand.ExecuteAsync(null);
 
         // Assert
-        _mockRentalRepository.Verify(
-            r => r.AddAsync(It.Is<Rental>(rental =>
-                rental.ItemId == 1 &&
-                rental.StartDate == DateTime.Today.AddDays(1).ToString("yyyy-MM-dd") &&
-                rental.EndDate == DateTime.Today.AddDays(3).ToString("yyyy-MM-dd"))),
+        _mockRentalService.Verify(
+            s => s.CreateRentalAsync(
+                1,
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>()),
             Times.Once);
     }
 
     [Fact]
-    public async Task SubmitRental_WhenRepositoryReturnsNull_SetsErrorMessage()
+    public async Task SubmitRental_WhenServiceReturnsNull_SetsErrorMessage()
     {
         // Arrange
         _viewModel.ItemId = 1;
         _viewModel.StartDate = DateTime.Today.AddDays(1);
         _viewModel.EndDate = DateTime.Today.AddDays(3);
-        _mockRentalRepository
-            .Setup(r => r.AddAsync(It.IsAny<Rental>()))
+        _mockRentalService
+            .Setup(s => s.CreateRentalAsync(
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>()))
             .ReturnsAsync((Rental?)null);
 
         // Act

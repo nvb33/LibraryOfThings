@@ -1,19 +1,18 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using StarterApp.Database.Data.Repositories;
-using StarterApp.Database.Models;
+using StarterApp.Services;
 
 namespace StarterApp.ViewModels;
 
 /// <summary>
 /// ViewModel for the Submit Review page, allowing a borrower to rate
-/// and comment on a completed rental.
+/// and comment on a completed rental via the review service.
 /// </summary>
 [QueryProperty(nameof(RentalId), "rentalId")]
 [QueryProperty(nameof(ItemTitle), "itemTitle")]
 public partial class SubmitReviewViewModel : ObservableObject
 {
-    private readonly IReviewRepository _reviewRepository;
+    private readonly IReviewService _reviewService;
 
     /// <summary>Gets or sets the unique identifier of the completed rental being reviewed.</summary>
     [ObservableProperty]
@@ -31,7 +30,7 @@ public partial class SubmitReviewViewModel : ObservableObject
     [ObservableProperty]
     private string _comment = string.Empty;
 
-    /// <summary>Gets or sets a value indicating whether an API operation is in progress.</summary>
+    /// <summary>Gets or sets a value indicating whether an operation is in progress.</summary>
     [ObservableProperty]
     private bool _isBusy;
 
@@ -57,10 +56,10 @@ public partial class SubmitReviewViewModel : ObservableObject
     /// <summary>
     /// Initialises a new instance of <see cref="SubmitReviewViewModel"/>.
     /// </summary>
-    /// <param name="reviewRepository">The repository used to submit reviews.</param>
-    public SubmitReviewViewModel(IReviewRepository reviewRepository)
+    /// <param name="reviewService">The service providing review business logic.</param>
+    public SubmitReviewViewModel(IReviewService reviewService)
     {
-        _reviewRepository = reviewRepository;
+        _reviewService = reviewService;
     }
 
     /// <summary>Sets the current star rating and updates star colours.</summary>
@@ -79,12 +78,12 @@ public partial class SubmitReviewViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Validates and submits the review via the repository.
+    /// Validates and submits the review via the review service.
     /// </summary>
     [RelayCommand]
     private async Task SubmitReviewAsync()
     {
-        if (Rating < 1 || Rating > 5)
+        if (!_reviewService.IsValidRating(Rating))
         {
             ErrorMessage = "Please select a rating between 1 and 5.";
             return;
@@ -101,16 +100,16 @@ public partial class SubmitReviewViewModel : ObservableObject
 
         try
         {
-            var review = new Review
+            var rental = new Database.Models.Rental
             {
-                RentalId = RentalId,
-                Rating = Rating,
-                Comment = Comment
+                Id = RentalId,
+                Status = "Completed"
             };
 
-            var created = await _reviewRepository.AddAsync(review);
+            var review = await _reviewService.SubmitReviewAsync(
+                rental, Rating, Comment);
 
-            if (created != null)
+            if (review != null)
             {
                 await Shell.Current.DisplayAlert(
                     "Review Submitted",
@@ -120,8 +119,13 @@ public partial class SubmitReviewViewModel : ObservableObject
             }
             else
             {
-                ErrorMessage = "Failed to submit review. You may have already reviewed this rental.";
+                ErrorMessage = "Failed to submit review. " +
+                               "You may have already reviewed this rental.";
             }
+        }
+        catch (ArgumentException ex)
+        {
+            ErrorMessage = ex.Message;
         }
         catch (Exception ex)
         {

@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using StarterApp.Database.Data.Repositories;
 using StarterApp.Database.Models;
+using StarterApp.Services;
 using System.Collections.ObjectModel;
 
 namespace StarterApp.ViewModels;
@@ -9,11 +9,12 @@ namespace StarterApp.ViewModels;
 /// <summary>
 /// ViewModel for the Item Reviews page, displaying all reviews for a specific
 /// item along with the average rating and total review count.
+/// Delegates all data access to IReviewService.
 /// </summary>
 [QueryProperty(nameof(ItemId), "itemId")]
 public partial class ItemReviewsViewModel : ObservableObject
 {
-    private readonly IReviewRepository _reviewRepository;
+    private readonly IReviewService _reviewService;
 
     /// <summary>Gets or sets the unique identifier of the item whose reviews are displayed.</summary>
     [ObservableProperty]
@@ -41,6 +42,7 @@ public partial class ItemReviewsViewModel : ObservableObject
 
     /// <summary>
     /// Gets a formatted summary string showing average rating and total count.
+    /// Example: "4.5 ★ (12 reviews)" or "No reviews yet".
     /// </summary>
     public string FormattedAverageRating => TotalReviews > 0
         ? $"{AverageRating:F1} ★ ({TotalReviews} reviews)"
@@ -49,10 +51,10 @@ public partial class ItemReviewsViewModel : ObservableObject
     /// <summary>
     /// Initialises a new instance of <see cref="ItemReviewsViewModel"/>.
     /// </summary>
-    /// <param name="reviewRepository">The repository used to retrieve item reviews.</param>
-    public ItemReviewsViewModel(IReviewRepository reviewRepository)
+    /// <param name="reviewService">The service providing review business logic.</param>
+    public ItemReviewsViewModel(IReviewService reviewService)
     {
-        _reviewRepository = reviewRepository;
+        _reviewService = reviewService;
     }
 
     /// <summary>
@@ -65,7 +67,8 @@ public partial class ItemReviewsViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Loads all reviews for the current item from the repository.
+    /// Loads all reviews for the current item from the review service.
+    /// Skips execution if a load is already in progress.
     /// </summary>
     [RelayCommand]
     private async Task LoadReviewsAsync()
@@ -77,10 +80,10 @@ public partial class ItemReviewsViewModel : ObservableObject
 
         try
         {
-            var reviews = await _reviewRepository.GetByItemAsync(ItemId);
+            var reviews = await _reviewService.GetReviewsForItemAsync(ItemId);
             Reviews = new ObservableCollection<Review>(reviews);
-            AverageRating = await _reviewRepository.GetAverageRatingAsync(ItemId);
-            TotalReviews = await _reviewRepository.GetTotalReviewsAsync(ItemId);
+            AverageRating = await _reviewService.GetAverageRatingAsync(ItemId);
+            TotalReviews = await _reviewService.GetTotalReviewsAsync(ItemId);
             OnPropertyChanged(nameof(FormattedAverageRating));
         }
         catch (Exception ex)
