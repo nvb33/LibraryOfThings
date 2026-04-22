@@ -26,7 +26,7 @@
                            FontSize="22"
                            FontAttributes="Bold" />
                     <Label Grid.Column="1"
-                           Text="{Binding Item.FormattedRate}"
+                           Text="{Binding Item.DailyRate, StringFormat='£{0:F2}/day'}"
                            FontSize="18"
                            TextColor="Green"
                            FontAttributes="Bold"
@@ -36,7 +36,7 @@
                 <!-- Category and availability -->
                 <Grid ColumnDefinitions="*,Auto">
                     <Label Grid.Column="0"
-                           Text="{Binding Item.Category.Name}"
+                           Text="{Binding Item.CategoryName}"
                            TextColor="Gray"
                            FontSize="14" />
                     <Label Grid.Column="1"
@@ -63,7 +63,7 @@
                 <Label Text="Listed by"
                        FontAttributes="Bold"
                        FontSize="16" />
-                <Label Text="{Binding Item.Owner.FullName}"
+                <Label Text="{Binding Item.OwnerName}"
                        FontSize="14"
                        TextColor="Gray" />
 
@@ -74,6 +74,13 @@
                         BackgroundColor="#512BD4"
                         TextColor="White"
                         Margin="0,8" />
+
+                <!-- See reviews button -->
+                <Button Text="See Reviews"
+                        Command="{Binding NavigateToReviewsCommand}"
+                        BackgroundColor="#E0E0E0"
+                        TextColor="Black"
+                        Margin="16,0" />
 
                 <!-- Unavailable message -->
                 <Label Text="This item is currently unavailable."

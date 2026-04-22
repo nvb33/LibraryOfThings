@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:StarterApp.ViewModels"
+             xmlns:models="clr-namespace:StarterApp.Database.Models;assembly=StarterApp.Database"
+             x:Class="StarterApp.Views.ItemReviewsPage"
+             x:DataType="viewmodels:ItemReviewsViewModel"
+             Title="Reviews">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- Average rating summary -->
+        <Border Grid.Row="0"
+                BackgroundColor="#512BD4"
+                Padding="20"
+                Margin="16,16,16,8">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="12" />
+            </Border.StrokeShape>
+            <Label Text="{Binding FormattedAverageRating}"
+                   TextColor="White"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+        </Border>
+
+        <!-- Error message -->
+        <Label Grid.Row="1"
+               Text="{Binding ErrorMessage}"
+               TextColor="Red"
+               IsVisible="{Binding ErrorMessage,
+                   Converter={StaticResource StringToBoolConverter}}"
+               HorizontalOptions="Center"
+               Margin="16" />
+
+        <!-- Loading spinner -->
+        <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center" />
+
+        <!-- Reviews list -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Reviews}">
+            <CollectionView.EmptyView>
+                <Label Text="No reviews yet. Be the first to review this item!"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       TextColor="Gray"
+                       HorizontalTextAlignment="Center"
+                       Margin="32" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Review">
+                    <Border Margin="12,6" Padding="12"
+                            StrokeShape="RoundRectangle 8"
+                            Stroke="#E0E0E0">
+                        <VerticalStackLayout Spacing="4">
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding ReviewerName}"
+                                       FontAttributes="Bold"
+                                       FontSize="15" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding FormattedDate}"
+                                       TextColor="Gray"
+                                       FontSize="12" />
+                            </Grid>
+
+                            <Label Text="{Binding FormattedRating}"
+                                   TextColor="#FFD700"
+                                   FontSize="18" />
+
+                            <Label Text="{Binding Comment}"
+                                   TextColor="#444444"
+                                   FontSize="14"
+                                   IsVisible="{Binding Comment,
+                                       Converter={StaticResource StringToBoolConverter}}" />
+
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

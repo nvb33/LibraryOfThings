@@ -7,26 +7,24 @@ namespace StarterApp.Tests;
 
 public class RentalsViewModelTests
 {
-    private readonly Mock<IApiService> _mockApiService;
+    private readonly Mock<IRentalService> _mockRentalService;
     private readonly RentalsViewModel _viewModel;
 
     public RentalsViewModelTests()
     {
-        _mockApiService = new Mock<IApiService>();
-        _viewModel = new RentalsViewModel(_mockApiService.Object);
+        _mockRentalService = new Mock<IRentalService>();
+        _viewModel = new RentalsViewModel(_mockRentalService.Object);
     }
 
     [Fact]
     public void ShowingOutgoing_DefaultsToTrue()
     {
-        // Assert
         Assert.True(_viewModel.ShowingOutgoing);
     }
 
     [Fact]
     public void ShowingIncoming_DefaultsToFalse()
     {
-        // Assert
         Assert.False(_viewModel.ShowingIncoming);
     }
 
@@ -44,7 +42,7 @@ public class RentalsViewModelTests
     [Fact]
     public void ShowOutgoing_SetsShowingOutgoingTrue()
     {
-        // Arrange — switch to incoming first
+        // Arrange
         _viewModel.ShowIncomingCommand.Execute(null);
 
         // Act
@@ -64,8 +62,8 @@ public class RentalsViewModelTests
             new Rental { Id = 1, ItemTitle = "Drill", Status = "Requested" },
             new Rental { Id = 2, ItemTitle = "Ladder", Status = "Approved" }
         };
-        _mockApiService.Setup(s => s.GetOutgoingRentalsAsync()).ReturnsAsync(rentals);
-        _mockApiService.Setup(s => s.GetIncomingRentalsAsync()).ReturnsAsync(new List<Rental>());
+        _mockRentalService.Setup(s => s.GetOutgoingRentalsAsync()).ReturnsAsync(rentals);
+        _mockRentalService.Setup(s => s.GetIncomingRentalsAsync()).ReturnsAsync(new List<Rental>());
 
         // Act
         await _viewModel.LoadRentalsCommand.ExecuteAsync(null);
@@ -82,8 +80,8 @@ public class RentalsViewModelTests
         {
             new Rental { Id = 3, ItemTitle = "Tent", Status = "Requested" }
         };
-        _mockApiService.Setup(s => s.GetOutgoingRentalsAsync()).ReturnsAsync(new List<Rental>());
-        _mockApiService.Setup(s => s.GetIncomingRentalsAsync()).ReturnsAsync(rentals);
+        _mockRentalService.Setup(s => s.GetOutgoingRentalsAsync()).ReturnsAsync(new List<Rental>());
+        _mockRentalService.Setup(s => s.GetIncomingRentalsAsync()).ReturnsAsync(rentals);
 
         // Act
         await _viewModel.LoadRentalsCommand.ExecuteAsync(null);
@@ -93,10 +91,10 @@ public class RentalsViewModelTests
     }
 
     [Fact]
-    public async Task LoadRentals_WhenApiFails_SetsErrorMessage()
+    public async Task LoadRentals_WhenServiceFails_SetsErrorMessage()
     {
         // Arrange
-        _mockApiService
+        _mockRentalService
             .Setup(s => s.GetOutgoingRentalsAsync())
             .ThrowsAsync(new Exception("Network error"));
 
@@ -111,8 +109,8 @@ public class RentalsViewModelTests
     public async Task LoadRentals_SetsIsBusyFalseAfterCompletion()
     {
         // Arrange
-        _mockApiService.Setup(s => s.GetOutgoingRentalsAsync()).ReturnsAsync(new List<Rental>());
-        _mockApiService.Setup(s => s.GetIncomingRentalsAsync()).ReturnsAsync(new List<Rental>());
+        _mockRentalService.Setup(s => s.GetOutgoingRentalsAsync()).ReturnsAsync(new List<Rental>());
+        _mockRentalService.Setup(s => s.GetIncomingRentalsAsync()).ReturnsAsync(new List<Rental>());
 
         // Act
         await _viewModel.LoadRentalsCommand.ExecuteAsync(null);

@@ -9,44 +9,35 @@ jobs:
   generate:
     runs-on: ubuntu-latest
 
-    permissions:
-      pages: write
-      id-token: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Install Doxygen
-        run: sudo apt-get install doxygen -y
+        run: sudo apt-get install -y doxygen graphviz
 
-      - name: Generate Doxyfile
-        run: doxygen -g
+      - name: Create Doxyfile
+        run: |
+          cat > Doxyfile << 'EOF'
+          PROJECT_NAME           = "Library of Things"
+          OUTPUT_DIRECTORY       = html
+          INPUT                  = StarterApp StarterApp.Database
+          RECURSIVE              = YES
+          EXTRACT_ALL            = YES
+          FILE_PATTERNS          = *.cs
+          GENERATE_HTML          = YES
+          GENERATE_LATEX         = NO
+          HTML_OUTPUT            = .
+          HAVE_DOT               = YES
+          USE_MDFILE_AS_MAINPAGE = README.md
+          QUIET                  = YES
+          EOF
 
       - name: Generate Doxygen Documentation
-        run: doxygen .
+        run: doxygen Doxyfile
 
-      - name: Upload static files as artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload documentation as artifact
+        uses: actions/upload-artifact@v4
         with:
+          name: doxygen-docs
           path: html
-
-  deploy:
-    needs: generate
-    runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Output Page URL
-        run: echo "GitHub Pages URL: ${{ steps.deployment.outputs.page_url }}"

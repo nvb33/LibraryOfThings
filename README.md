@@ -1,91 +1,182 @@
+# Library of Things — Peer-to-Peer Rental Marketplace
+
+A .NET MAUI Android application for peer-to-peer rental of everyday items, built as part of the Edinburgh Napier University SET09102 Software Engineering module.
+
+## Project Overview
+
+Library of Things allows users to:
+- Browse and list items available for rent
+- Search for items nearby using location
+- Request, approve and manage rentals end-to-end
+- Leave reviews after completed rentals
+
+The app communicates with a shared REST API backend and follows the MVVM architecture pattern with dependency injection.
+
 ---
-title: "StarterApp readme"
-parent: StarterApp
-grand_parent: C# practice
-nav_order: 5
-mermaid: true
+
+## Repository Structure
+
+LibraryOfThings/
+├── .github/
+│   └── workflows/
+│       ├── build.yml               # CI/CD pipeline (build, test, APK)
+│       └── documentation.yml       # Doxygen documentation generation
+├── StarterApp/                     # .NET MAUI Android app
+│   ├── Converters/                 # Value converters for XAML bindings
+│   ├── Services/                   # API service layer (IApiService, ApiService)
+│   ├── ViewModels/                 # MVVM ViewModels
+│   └── Views/                      # XAML pages and code-behind
+├── StarterApp.Database/            # Shared models and DbContext
+│   ├── Data/                       # AppDbContext
+│   └── Models/                     # Item, Rental, Review, User etc.
+├── StarterApp.Migrations/          # EF Core database migrations
+├── StarterApp.Tests/               # xUnit test project
+├── docker-compose.yml              # PostgreSQL container
+├── .gitignore
+├── README.md
+└── LibraryOfThings.sln
+
 ---
 
-# StarterApp
+## Prerequisites
 
-The purpose of this app is to act as a starting point for further development. It provides some
-basic features including:
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Android SDK](https://developer.android.com/studio) (API level 21+)
+- Visual Studio Code with C# Dev Kit extension
 
-* Database integration and migrations
-* Role-based security
-* Local authentication
-* Example navigation
+---
 
-This version of the app uses PostgreSQL for data storage and Entity Framework Core for object-relational mapping
-and migrations.
+## Setup Instructions
 
-To fully understand how it works, you should follow an appropriate set of tutorials such as 
-[this one](https://edinburgh-napier.github.io/SET09102/tutorials/csharp/) which covers all of the main
-concepts and techniques used here. However, if you want to jump straight in and work out any problems
-as you go along, that will also work. The code uses structured comments for use with the 
-[Doxygen](https://www.doxygen.nl/) documentation generator tool. 
+### 1. Clone the repository
 
-You can use any development environment with this project including
+```bash
+git clone https://github.com/nvb33/LibraryOfThings.git
+cd LibraryOfThings
+```
 
-* [Rider](https://www.jetbrains.com/rider/)
-* [Visual Studio](https://visualstudio.microsoft.com/)
-* [Visual Studio Code](https://code.visualstudio.com/)
+### 2. Start the PostgreSQL database
 
-The instructions assume you will be using VSCode since that is a lowest-common-denominator choice.
+```bash
+docker-compose up -d
+```
 
-## Compatibility
+### 3. Apply database migrations
 
-This app is built using the following tool versions.
+```bash
+dotnet ef database update --project StarterApp.Database --startup-project StarterApp.Migrations
+```
 
-| Name                                                                                      | Version     |
-|-------------------------------------------------------------------------------------------|-------------|
-| [.NET](https://dotnet.microsoft.com/en-us/)                                               | 8.0 / 9.0   |
-| [PostgreSQL Docker image](https://hub.docker.com/_/postgres)                              | 16          |
+### 4. Restore dependencies
 
+```bash
+dotnet restore
+```
 
-## Getting started
+---
 
-### Prerequisites
+## Running the Application
 
-Before using this app, ensure you have:
+### Build and deploy to Android device
 
-1. **.NET SDK 8.0** or later installed
-2. **Docker** installed and running
-3. **PostgreSQL container** running (see [dev-environment tutorial](https://edinburgh-napier.github.io/SET09102/tutorials/csharp/dev-environment/))
+Connect an Android device with USB debugging enabled, then:
 
-### Configuration
+```bash
+dotnet build StarterApp -f net10.0-android -c Debug
+```
 
-1. Copy `StarterApp.Database/appsettings.json.template` to `StarterApp.Database/appsettings.json`
-2. Update the connection string with your PostgreSQL credentials:
-   ```json
-   {
-     "ConnectionStrings": {
-       "DevelopmentConnection": "Host=localhost;Username=student_user;Password=password123;Database=starterapp"
-     }
-   }
-   ```
+Install the generated APK from:
 
-### Initial Setup
+StarterApp/bin/Debug/net10.0-android/com.companyname.starterapp-Signed.apk
 
-1. Navigate to the Migrations project and create the initial migration:
-   ```bash
-   cd StarterApp.Migrations
-   dotnet ef migrations add InitialCreate
-   ```
+---
 
-2. Apply the migration to create the database:
-   ```bash
-   dotnet ef database update
-   ```
+## Running the Tests
 
-3. Build and run the application:
-   ```bash
-   cd ../StarterApp
-   dotnet build
-   dotnet run
-   ```
+```bash
+dotnet test StarterApp.Tests
+```
 
-### Tutorial
+Expected output: **45 tests, 0 failures**
 
-For a comprehensive guide on using this app and understanding its architecture, see the
-[MAUI + MVVM + Database Tutorial](https://edinburgh-napier.github.io/SET09102/tutorials/csharp/maui-mvvm-database/).
+To run with detailed output:
+
+```bash
+dotnet test StarterApp.Tests --verbosity normal
+```
+
+---
+
+## API Documentation
+
+The application connects to a shared REST API:
+
+**Base URL:** `https://set09102-api.b-davison.workers.dev`
+
+Key endpoints:
+- `POST /auth/login` — authenticate and receive JWT token
+- `GET /items` — list all available items
+- `GET /items/nearby` — search items by location
+- `POST /rentals` — create a rental request
+- `PATCH /rentals/{id}/status` — update rental status
+- `POST /reviews` — submit a review
+- `GET /items/{id}/reviews` — get reviews for an item
+
+---
+
+## Architecture Overview
+
+The application follows the **MVVM (Model-View-ViewModel)** pattern:
+
+Views (XAML)
+↕ Data Binding
+ViewModels (CommunityToolkit.Mvvm)
+↕ Dependency Injection
+Services (IApiService / ApiService)
+↕ HTTP / JSON
+REST API (set09102-api.b-davison.workers.dev)
+↕
+PostgreSQL Database
+
+**Key design decisions:**
+- **API-first** — all item and rental data comes from the shared API, not local database
+- **Dependency Injection** — all services and ViewModels registered in `MauiProgram.cs`
+- **Interface-based services** — `IApiService` and `IAuthenticationService` allow mocking in tests
+- **Converters** — `BoolToColorConverter`, `EqualToStringConverter`, `StringToBoolConverter`, `InvertedBoolConverter` handle UI state without logic in Views
+
+---
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions with two workflows:
+
+**`build.yml`** — triggers on pull requests:
+1. Checkout code
+2. Setup .NET 10
+3. Restore workloads and dependencies
+4. Build project
+5. Run unit tests
+6. Upload APK as artifact
+
+**`documentation.yml`** — triggers on push to main:
+1. Generate Doxygen documentation
+2. Upload HTML docs as artifact
+
+---
+
+## Running with Docker
+
+The `docker-compose.yml` sets up a local PostgreSQL instance:
+
+```bash
+# Start database
+docker-compose up -d
+
+# Stop database
+docker-compose down
+```
+
+Connection string (development):
+
+Host=localhost;Database=starterdb;Username=student_user;Password=password123;

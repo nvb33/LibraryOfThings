@@ -81,15 +81,34 @@
                                        FontAttributes="Bold" />
                             </Grid>
 
+                            <!-- Overdue warning -->
+                            <Label Text="{Binding OverdueMessage}"
+                                   TextColor="#F44336"
+                                   FontAttributes="Bold"
+                                   FontSize="13"
+                                   IsVisible="{Binding IsOverdue}" />
+
                             <!-- Mark as returned — only shown when Out for Rent -->
                             <Button Text="Mark as Returned"
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=MarkReturnedCommand}"
                                     CommandParameter="{Binding .}"
                                     BackgroundColor="#2196F3"
                                     TextColor="White"
+                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                                     IsVisible="{Binding Status,
                                         Converter={StaticResource EqualToStringConverter},
                                         ConverterParameter='Out for Rent'}" />
+
+                             <!-- Leave a Review — only shown when Completed -->
+                            <Button Text="Leave a Review"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=NavigateToReviewCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#512BD4"
+                                    TextColor="White"
+                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                                    IsVisible="{Binding Status,
+                                        Converter={StaticResource EqualToStringConverter},
+                                        ConverterParameter='Completed'}" />
 
                         </VerticalStackLayout>
                     </Border>
@@ -149,6 +168,7 @@
                                         CommandParameter="{Binding .}"
                                         BackgroundColor="#4CAF50"
                                         TextColor="White"
+                                        IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                                         Margin="0,0,4,0" />
                                 <Button Grid.Column="1"
                                         Text="Reject"
@@ -156,8 +176,20 @@
                                         CommandParameter="{Binding .}"
                                         BackgroundColor="#F44336"
                                         TextColor="White"
+                                        IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                                         Margin="4,0,0,0" />
                             </Grid>
+
+                            <!-- Mark as Out for Rent — only shown when Approved -->
+                            <Button Text="Mark as Out for Rent"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=MarkOutForRentCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#2196F3"
+                                    TextColor="White"
+                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                                    IsVisible="{Binding Status,
+                                        Converter={StaticResource EqualToStringConverter},
+                                        ConverterParameter='Approved'}" />
 
                             <!-- Complete button — only shown when Returned -->
                             <Button Text="Mark as Completed"
@@ -165,6 +197,7 @@
                                     CommandParameter="{Binding .}"
                                     BackgroundColor="#607D8B"
                                     TextColor="White"
+                                    IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:RentalsViewModel}}, Path=IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                                     IsVisible="{Binding Status,
                                         Converter={StaticResource EqualToStringConverter},
                                         ConverterParameter='Returned'}" />

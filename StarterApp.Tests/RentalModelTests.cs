@@ -107,4 +107,46 @@ public class RentalModelTests
         // Assert
         Assert.Equal("2025-06-01 → 2025-06-07", dates);
     }
+
+    [Fact]
+    public void IsOverdue_WhenOutForRentAndEndDatePassed_ReturnsTrue()
+    {
+        // Arrange
+        var rental = new Rental
+        {
+            Status = "Out for Rent",
+            EndDate = DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd")
+        };
+
+        // Assert
+        Assert.True(rental.IsOverdue);
+    }
+
+    [Fact]
+    public void IsOverdue_WhenOutForRentAndEndDateNotPassed_ReturnsFalse()
+    {
+        // Arrange
+        var rental = new Rental
+        {
+            Status = "Out for Rent",
+            EndDate = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")
+        };
+
+        // Assert
+        Assert.False(rental.IsOverdue);
+    }
+
+    [Fact]
+    public void IsOverdue_WhenNotOutForRent_ReturnsFalse()
+    {
+        // Arrange
+        var rental = new Rental
+        {
+            Status = "Approved",
+            EndDate = DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd")
+        };
+
+        // Assert
+        Assert.False(rental.IsOverdue);
+    }
 }

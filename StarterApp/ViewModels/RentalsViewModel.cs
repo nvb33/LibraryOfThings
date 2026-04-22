@@ -6,33 +6,51 @@ using System.Collections.ObjectModel;
 
 namespace StarterApp.ViewModels;
 
+/// <summary>
+/// ViewModel for the My Rentals page, managing both outgoing rental requests
+/// made by the current user and incoming requests for items they own.
+/// Delegates all business logic to IRentalService.
+/// </summary>
 public partial class RentalsViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IRentalService _rentalService;
 
+    /// <summary>Gets or sets the collection of rentals where the current user is the borrower.</summary>
     [ObservableProperty]
     private ObservableCollection<Rental> _outgoingRentals = new();
 
+    /// <summary>Gets or sets the collection of rental requests for items owned by the current user.</summary>
     [ObservableProperty]
     private ObservableCollection<Rental> _incomingRentals = new();
 
+    /// <summary>Gets or sets a value indicating whether an operation is in progress.</summary>
     [ObservableProperty]
     private bool _isBusy;
 
+    /// <summary>Gets a value indicating whether no operation is currently in progress.</summary>
+    public bool IsNotBusy => !IsBusy;
+
+    /// <summary>Gets or sets the error message to display when an operation fails.</summary>
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    // Controls which tab is visible
+    /// <summary>Gets or sets a value indicating whether the outgoing rentals tab is active.</summary>
     [ObservableProperty]
     private bool _showingOutgoing = true;
 
+    /// <summary>Gets a value indicating whether the incoming rentals tab is active.</summary>
     public bool ShowingIncoming => !ShowingOutgoing;
 
-    public RentalsViewModel(IApiService apiService)
+    /// <summary>
+    /// Initialises a new instance of <see cref="RentalsViewModel"/>.
+    /// </summary>
+    /// <param name="rentalService">The service providing rental business logic.</param>
+    public RentalsViewModel(IRentalService rentalService)
     {
-        _apiService = apiService;
+        _rentalService = rentalService;
     }
 
+    /// <summary>Switches the active tab to outgoing rentals.</summary>
     [RelayCommand]
     private void ShowOutgoing()
     {
@@ -40,6 +58,7 @@ public partial class RentalsViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowingIncoming));
     }
 
+    /// <summary>Switches the active tab to incoming rentals.</summary>
     [RelayCommand]
     private void ShowIncoming()
     {
@@ -47,20 +66,22 @@ public partial class RentalsViewModel : ObservableObject
         OnPropertyChanged(nameof(ShowingIncoming));
     }
 
+    /// <summary>
+    /// Loads both outgoing and incoming rentals from the service.
+    /// Skips execution if a load is already in progress.
+    /// </summary>
     [RelayCommand]
     private async Task LoadRentalsAsync()
     {
         if (IsBusy) return;
-
         IsBusy = true;
         ErrorMessage = string.Empty;
-
         try
         {
-            var outgoing = await _apiService.GetOutgoingRentalsAsync();
+            var outgoing = await _rentalService.GetOutgoingRentalsAsync();
             OutgoingRentals = new ObservableCollection<Rental>(outgoing);
 
-            var incoming = await _apiService.GetIncomingRentalsAsync();
+            var incoming = await _rentalService.GetIncomingRentalsAsync();
             IncomingRentals = new ObservableCollection<Rental>(incoming);
         }
         catch (Exception ex)
@@ -74,45 +95,62 @@ public partial class RentalsViewModel : ObservableObject
         }
     }
 
+    /// <summary>Approves an incoming rental request via the rental service.</summary>
     [RelayCommand]
     private async Task ApproveRentalAsync(Rental rental)
     {
-        await UpdateStatusAsync(rental, "Approved");
+        await UpdateAsync(() => _rentalService.ApproveRentalAsync(rental),
+            $"Cannot approve rental with status '{rental.Status}'.");
     }
 
+    /// <summary>Rejects an incoming rental request via the rental service.</summary>
     [RelayCommand]
     private async Task RejectRentalAsync(Rental rental)
     {
-        await UpdateStatusAsync(rental, "Rejected");
+        await UpdateAsync(() => _rentalService.RejectRentalAsync(rental),
+            $"Cannot reject rental with status '{rental.Status}'.");
     }
 
+    /// <summary>Marks an approved rental as Out for Rent via the rental service.</summary>
+    [RelayCommand]
+    private async Task MarkOutForRentAsync(Rental rental)
+    {
+        await UpdateAsync(() => _rentalService.MarkOutForRentAsync(rental),
+            $"Cannot mark rental as Out for Rent with status '{rental.Status}'.");
+    }
+
+    /// <summary>Marks an active rental as Returned via the rental service.</summary>
     [RelayCommand]
     private async Task MarkReturnedAsync(Rental rental)
     {
-        await UpdateStatusAsync(rental, "Returned");
+        await UpdateAsync(() => _rentalService.MarkReturnedAsync(rental),
+            $"Cannot mark rental as Returned with status '{rental.Status}'.");
     }
 
+    /// <summary>Marks a returned rental as Completed via the rental service.</summary>
     [RelayCommand]
     private async Task CompleteRentalAsync(Rental rental)
     {
-        await UpdateStatusAsync(rental, "Completed");
+        await UpdateAsync(() => _rentalService.CompleteRentalAsync(rental),
+            $"Cannot mark rental as Completed with status '{rental.Status}'.");
     }
 
-    private async Task UpdateStatusAsync(Rental rental, string newStatus)
+    /// <summary>
+    /// Executes a rental update operation, reloading rentals on success
+    /// or setting an error message on failure.
+    /// </summary>
+    /// <param name="operation">The service operation to execute.</param>
+    /// <param name="failureMessage">The message to display if the operation fails.</param>
+    private async Task UpdateAsync(Func<Task<bool>> operation, string failureMessage)
     {
         IsBusy = true;
         try
         {
-            var success = await _apiService.UpdateRentalStatusAsync(rental.Id, newStatus);
+            var success = await operation();
             if (success)
-            {
-                // Reload to reflect the new status
                 await LoadRentalsAsync();
-            }
             else
-            {
-                ErrorMessage = $"Failed to update rental status to {newStatus}.";
-            }
+                ErrorMessage = failureMessage;
         }
         catch (Exception ex)
         {
@@ -122,5 +160,18 @@ public partial class RentalsViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>Navigates to the Submit Review page for a completed rental.</summary>
+    [RelayCommand]
+    private async Task NavigateToReviewAsync(Rental rental)
+    {
+        if (!_rentalService.CanReview(rental))
+        {
+            ErrorMessage = "Reviews can only be submitted for completed rentals.";
+            return;
+        }
+        await Shell.Current.GoToAsync(
+            $"submitreview?rentalId={rental.Id}&itemTitle={Uri.EscapeDataString(rental.ItemTitle)}");
     }
 }
