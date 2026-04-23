@@ -73,8 +73,17 @@ public class Rental
     /// Gets a human-readable representation of the rental period.
     /// Example: 2025-06-01 → 2025-06-07
     /// </summary>
-    public string FormattedDates => $"{StartDate} → {EndDate}";
-
+    public string FormattedDates
+    {
+        get
+        {
+            var start = DateTime.TryParse(StartDate, out var s)
+                ? s.ToString("d MMM yyyy") : StartDate;
+            var end = DateTime.TryParse(EndDate, out var e)
+                ? e.ToString("d MMM yyyy") : EndDate;
+            return $"{start} → {end}";
+        }
+    }
     /// <summary>
     /// Gets the hex colour code corresponding to the current rental status,
     /// used to colour-code status labels in the UI.
