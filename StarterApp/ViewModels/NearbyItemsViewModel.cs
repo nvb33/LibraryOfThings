@@ -9,16 +9,30 @@ namespace StarterApp.ViewModels;
 
 /// <summary>
 /// ViewModel for the Items Near Me page, allowing users to search for
-/// available rental items within a configurable radius of their current location.
+/// available rental items within a configurable radius with category
+/// filter and title search.
 /// </summary>
 public partial class NearbyItemsViewModel : ObservableObject
 {
     private readonly IItemRepository _itemRepository;
     private readonly ILocationService _locationService;
+    private List<Item> _allNearbyItems = new();
 
-    /// <summary>Gets or sets the collection of nearby items returned by the search.</summary>
+    /// <summary>Gets or sets the filtered collection of nearby items.</summary>
     [ObservableProperty]
     private ObservableCollection<Item> _items = new();
+
+    /// <summary>Gets or sets the list of categories available for filtering.</summary>
+    [ObservableProperty]
+    private ObservableCollection<string> _categoryFilters = new();
+
+    /// <summary>Gets or sets the currently selected category filter.</summary>
+    [ObservableProperty]
+    private string _selectedCategoryFilter = "All categories";
+
+    /// <summary>Gets or sets the current search query for filtering by title.</summary>
+    [ObservableProperty]
+    private string _searchQuery = string.Empty;
 
     /// <summary>Gets or sets a value indicating whether a search is in progress.</summary>
     [ObservableProperty]
@@ -51,9 +65,15 @@ public partial class NearbyItemsViewModel : ObservableObject
         _locationService = locationService;
     }
 
+    /// <summary>Called automatically when SelectedCategoryFilter changes.</summary>
+    partial void OnSelectedCategoryFilterChanged(string value) => ApplyFilters();
+
+    /// <summary>Called automatically when SearchQuery changes.</summary>
+    partial void OnSearchQueryChanged(string value) => ApplyFilters();
+
     /// <summary>
     /// Retrieves the device's current location and searches for items within
-    /// the configured radius. Updates the Items collection with results.
+    /// the configured radius. Populates category filter from results.
     /// </summary>
     [RelayCommand]
     private async Task SearchNearbyAsync()
@@ -63,47 +83,72 @@ public partial class NearbyItemsViewModel : ObservableObject
         IsBusy = true;
         IsEmpty = false;
         ErrorMessage = string.Empty;
-
-        LocationStatus = "Step 1: Command fired";
-        await Task.Delay(500);
+        LocationStatus = "Getting location...";
 
         try
         {
-            LocationStatus = "Step 2: Getting location...";
             var location = await _locationService.GetCurrentLocationAsync();
 
             if (location == null)
             {
-                ErrorMessage = "Location returned null";
-                LocationStatus = "Location is null";
+                ErrorMessage = "Could not determine your location.";
+                LocationStatus = "Location unavailable";
                 return;
             }
 
             var (lat, lon) = location.Value;
-            LocationStatus = $"Step 3: Got location {lat:F4},{lon:F4}. Calling API...";
-            await Task.Delay(500);
+            LocationStatus = "Searching nearby items...";
 
             var items = await _itemRepository.GetNearbyAsync(lat, lon, RadiusKm);
-            LocationStatus = $"Step 4: Repository returned {items.Count()} items";
-            await Task.Delay(500);
+            _allNearbyItems = items.ToList();
 
-            Items = new ObservableCollection<Item>(items);
-            IsEmpty = !Items.Any();
+            // Build category filter dynamically from results
+            var categories = _allNearbyItems
+                .Select(i => i.CategoryName)
+                .Where(c => !string.IsNullOrEmpty(c))
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
 
-            LocationStatus = IsEmpty
+            CategoryFilters = new ObservableCollection<string>(
+                new[] { "All categories" }.Concat(categories));
+
+            SelectedCategoryFilter = "All categories";
+            SearchQuery = string.Empty;
+            ApplyFilters();
+
+            LocationStatus = _allNearbyItems.Count == 0
                 ? $"No items found within {RadiusKm:F0}km"
-                : $"Found {Items.Count} item(s) within {RadiusKm:F0}km";
+                : $"Found {_allNearbyItems.Count} item(s) within {RadiusKm:F0}km";
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Error: {ex.Message}";
-            LocationStatus = $"Exception: {ex.GetType().Name}";
+            LocationStatus = "Search failed";
             System.Diagnostics.Debug.WriteLine($"Full error: {ex}");
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    /// <summary>
+    /// Applies the current search query and category filter to the nearby items.
+    /// </summary>
+    private void ApplyFilters()
+    {
+        var filtered = _allNearbyItems.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+            filtered = filtered.Where(i =>
+                i.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+
+        if (SelectedCategoryFilter != "All categories")
+            filtered = filtered.Where(i => i.CategoryName == SelectedCategoryFilter);
+
+        Items = new ObservableCollection<Item>(filtered);
+        IsEmpty = !Items.Any();
     }
 
     /// <summary>

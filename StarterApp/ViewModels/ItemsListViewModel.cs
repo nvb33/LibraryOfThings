@@ -8,14 +8,15 @@ namespace StarterApp.ViewModels;
 
 /// <summary>
 /// ViewModel for the Items List page, loading and displaying all available
-/// rental items from the repository with optional owner filtering.
+/// rental items with search, owner filter and sort options.
+/// All filtering and sorting is performed client-side on the loaded items.
 /// </summary>
 public partial class ItemsListViewModel : ObservableObject
 {
     private readonly IItemRepository _itemRepository;
     private List<Item> _allItems = new();
 
-    /// <summary>Gets or sets the filtered collection of items displayed in the UI.</summary>
+    /// <summary>Gets or sets the filtered and sorted collection of items displayed in the UI.</summary>
     [ObservableProperty]
     private ObservableCollection<Item> _items = new();
 
@@ -27,11 +28,30 @@ public partial class ItemsListViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedOwnerFilter = "All owners";
 
+    /// <summary>Gets or sets the list of sort options available.</summary>
+    [ObservableProperty]
+    private ObservableCollection<string> _sortOptions = new()
+    {
+        "Default",
+        "Price: Low to High",
+        "Price: High to Low",
+        "Rating: High to Low",
+        "Newest first"
+    };
+
+    /// <summary>Gets or sets the currently selected sort option.</summary>
+    [ObservableProperty]
+    private string _selectedSortOption = "Default";
+
+    /// <summary>Gets or sets the current search query for filtering by title.</summary>
+    [ObservableProperty]
+    private string _searchQuery = string.Empty;
+
     /// <summary>Gets or sets a value indicating whether items are being loaded.</summary>
     [ObservableProperty]
     private bool _isBusy;
 
-    /// <summary>Gets or sets a value indicating whether the items list is empty.</summary>
+    /// <summary>Gets or sets a value indicating whether the filtered list is empty.</summary>
     [ObservableProperty]
     private bool _isEmpty;
 
@@ -48,17 +68,17 @@ public partial class ItemsListViewModel : ObservableObject
         _itemRepository = itemRepository;
     }
 
-    /// <summary>
-    /// Called automatically when SelectedOwnerFilter changes.
-    /// Applies the selected filter to the items collection.
-    /// </summary>
-    partial void OnSelectedOwnerFilterChanged(string value)
-    {
-        ApplyFilter(value);
-    }
+    /// <summary>Called automatically when SelectedOwnerFilter changes.</summary>
+    partial void OnSelectedOwnerFilterChanged(string value) => ApplyFiltersAndSort();
+
+    /// <summary>Called automatically when SelectedSortOption changes.</summary>
+    partial void OnSelectedSortOptionChanged(string value) => ApplyFiltersAndSort();
+
+    /// <summary>Called automatically when SearchQuery changes.</summary>
+    partial void OnSearchQueryChanged(string value) => ApplyFiltersAndSort();
 
     /// <summary>
-    /// Loads all available items from the repository and populates the owner filter.
+    /// Loads all available items from the repository and populates filter options.
     /// Skips execution if a load is already in progress.
     /// </summary>
     [RelayCommand]
@@ -85,9 +105,11 @@ public partial class ItemsListViewModel : ObservableObject
             OwnerFilters = new ObservableCollection<string>(
                 new[] { "All owners" }.Concat(owners));
 
-            // Reset filter and apply
+            // Reset filters and apply
             SelectedOwnerFilter = "All owners";
-            ApplyFilter("All owners");
+            SelectedSortOption = "Default";
+            SearchQuery = string.Empty;
+            ApplyFiltersAndSort();
         }
         catch (Exception ex)
         {
@@ -102,15 +124,31 @@ public partial class ItemsListViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Applies the owner filter to the items collection.
-    /// Shows all items when "All owners" is selected.
+    /// Applies the current search query, owner filter and sort option
+    /// to produce the filtered and sorted items collection.
     /// </summary>
-    /// <param name="ownerName">The owner name to filter by, or "All owners" for no filter.</param>
-    private void ApplyFilter(string ownerName)
+    private void ApplyFiltersAndSort()
     {
-        var filtered = ownerName == "All owners"
-            ? _allItems
-            : _allItems.Where(i => i.OwnerName == ownerName).ToList();
+        var filtered = _allItems.AsEnumerable();
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+            filtered = filtered.Where(i =>
+                i.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+
+        // Apply owner filter
+        if (SelectedOwnerFilter != "All owners")
+            filtered = filtered.Where(i => i.OwnerName == SelectedOwnerFilter);
+
+        // Apply sort
+        filtered = SelectedSortOption switch
+        {
+            "Price: Low to High"  => filtered.OrderBy(i => i.DailyRate),
+            "Price: High to Low"  => filtered.OrderByDescending(i => i.DailyRate),
+            "Rating: High to Low" => filtered.OrderByDescending(i => i.AverageRating ?? 0),
+            "Newest first"        => filtered.OrderByDescending(i => i.CreatedAt),
+            _                     => filtered
+        };
 
         Items = new ObservableCollection<Item>(filtered);
         IsEmpty = !Items.Any();

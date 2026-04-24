@@ -102,10 +102,10 @@ public class RentalModelTests
         var rental = new Rental { StartDate = "2025-06-01", EndDate = "2025-06-07" };
 
         // Act
-        var dates = rental.FormattedDates;
+        var formatted = rental.FormattedDates;
 
         // Assert
-        Assert.Equal("2025-06-01 → 2025-06-07", dates);
+        Assert.Equal("1 Jun 2025 → 7 Jun 2025", formatted);
     }
 
     [Fact]

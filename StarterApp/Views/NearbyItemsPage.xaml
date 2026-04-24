@@ -7,9 +7,9 @@
              x:DataType="viewmodels:NearbyItemsViewModel"
              Title="Items Near Me">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
 
-        <!-- Location status -->
+        <!-- Location status — Row 0 -->
         <Label Grid.Row="0"
                Text="{Binding LocationStatus}"
                HorizontalOptions="Center"
@@ -17,7 +17,7 @@
                FontSize="13"
                Margin="16,8" />
 
-        <!-- Radius slider -->
+        <!-- Radius slider — Row 1 -->
         <VerticalStackLayout Grid.Row="1" Margin="16,0">
             <Label Text="{Binding RadiusKm, StringFormat='Search radius: {0:F0} km'}"
                    FontAttributes="Bold" />
@@ -26,7 +26,7 @@
                     Value="{Binding RadiusKm, Mode=TwoWay}" />
         </VerticalStackLayout>
 
-        <!-- Search button -->
+        <!-- Search button — Row 2 -->
         <Button Grid.Row="2"
                 Text="Search Near Me"
                 Command="{Binding SearchNearbyCommand}"
@@ -36,14 +36,39 @@
                 TextColor="White"
                 Margin="16,8" />
 
-        <!-- Loading spinner -->
-        <ActivityIndicator Grid.Row="3"
+        <!-- Search bar — Row 3 (only visible after search) -->
+        <SearchBar Grid.Row="3"
+                   Text="{Binding SearchQuery, Mode=TwoWay}"
+                   Placeholder="Search by title..."
+                   IsVisible="{Binding CategoryFilters.Count,
+                       Converter={StaticResource StringToBoolConverter}}"
+                   Margin="12,4" />
+
+        <!-- Category filter — Row 4 (only visible after search) -->
+        <Grid Grid.Row="4"
+              ColumnDefinitions="Auto,*"
+              Margin="16,4"
+              IsVisible="{Binding CategoryFilters.Count,
+                  Converter={StaticResource StringToBoolConverter}}">
+            <Label Grid.Column="0"
+                   Text="Category:"
+                   VerticalOptions="Center"
+                   FontSize="14"
+                   Margin="0,0,8,0" />
+            <Picker Grid.Column="1"
+                    ItemsSource="{Binding CategoryFilters}"
+                    SelectedItem="{Binding SelectedCategoryFilter, Mode=TwoWay}"
+                    Title="All categories" />
+        </Grid>
+
+        <!-- Loading spinner — Row 5 -->
+        <ActivityIndicator Grid.Row="5"
                            IsRunning="{Binding IsBusy}"
                            IsVisible="{Binding IsBusy}"
                            HorizontalOptions="Center" />
 
-        <!-- Error message -->
-        <Label Grid.Row="3"
+        <!-- Error message — Row 6 -->
+        <Label Grid.Row="6"
                Text="{Binding ErrorMessage}"
                TextColor="Red"
                IsVisible="{Binding ErrorMessage,
@@ -51,9 +76,9 @@
                HorizontalOptions="Center"
                Margin="16" />
 
-        <!-- Empty state -->
-        <Label Grid.Row="4"
-               Text="{Binding LocationStatus}"
+        <!-- Empty state + Items list — Row 7 -->
+        <Label Grid.Row="7"
+               Text="No items match your search."
                IsVisible="{Binding IsEmpty}"
                HorizontalOptions="Center"
                VerticalOptions="Center"
@@ -61,8 +86,7 @@
                HorizontalTextAlignment="Center"
                Margin="32" />
 
-        <!-- Nearby items list -->
-        <CollectionView Grid.Row="4"
+        <CollectionView Grid.Row="7"
                         ItemsSource="{Binding Items}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Item">
@@ -79,7 +103,7 @@
                                    FontSize="16" />
 
                             <Label Grid.Row="0" Grid.Column="1"
-                                   Text="{Binding FormattedRate}"
+                                   Text="{Binding DailyRate, StringFormat='£{0:F2}/day'}"
                                    TextColor="Green"
                                    FontAttributes="Bold" />
 
@@ -93,7 +117,6 @@
                                    FontSize="13"
                                    TextColor="Gray" />
 
-                            <!-- Distance — only shown on nearby page -->
                             <Label Grid.Row="2"
                                    Grid.ColumnSpan="2"
                                    Text="{Binding FormattedDistance}"
