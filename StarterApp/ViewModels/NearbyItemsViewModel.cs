@@ -54,6 +54,10 @@ public partial class NearbyItemsViewModel : ObservableObject
     [ObservableProperty]
     private string _locationStatus = "Tap 'Search' to find items near you";
 
+    /// <summary>Gets or sets a value indicating whether search results are available to filter.</summary>
+    [ObservableProperty]
+    private bool _hasResults;
+
     /// <summary>
     /// Initialises a new instance of <see cref="NearbyItemsViewModel"/>.
     /// </summary>
@@ -101,6 +105,7 @@ public partial class NearbyItemsViewModel : ObservableObject
 
             var items = await _itemRepository.GetNearbyAsync(lat, lon, RadiusKm);
             _allNearbyItems = items.ToList();
+            HasResults = _allNearbyItems.Count > 0;
 
             // Build category filter dynamically from results
             var categories = _allNearbyItems
@@ -149,6 +154,7 @@ public partial class NearbyItemsViewModel : ObservableObject
 
         Items = new ObservableCollection<Item>(filtered);
         IsEmpty = !Items.Any();
+        HasResults = _allNearbyItems.Count > 0;
     }
 
     /// <summary>

@@ -77,8 +77,8 @@
                Margin="32" />
 
         <RefreshView Grid.Row="5"
-                     IsRefreshing="{Binding IsBusy}"
-                     Command="{Binding LoadItemsCommand}">
+             IsRefreshing="{Binding IsRefreshing}"
+             Command="{Binding LoadItemsCommand}">
             <CollectionView ItemsSource="{Binding Items}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Item">

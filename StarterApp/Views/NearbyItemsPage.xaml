@@ -40,16 +40,14 @@
         <SearchBar Grid.Row="3"
                    Text="{Binding SearchQuery, Mode=TwoWay}"
                    Placeholder="Search by title..."
-                   IsVisible="{Binding CategoryFilters.Count,
-                       Converter={StaticResource StringToBoolConverter}}"
+                   IsVisible="{Binding HasResults}"
                    Margin="12,4" />
 
         <!-- Category filter — Row 4 (only visible after search) -->
         <Grid Grid.Row="4"
               ColumnDefinitions="Auto,*"
               Margin="16,4"
-              IsVisible="{Binding CategoryFilters.Count,
-                  Converter={StaticResource StringToBoolConverter}}">
+              IsVisible="{Binding HasResults}">
             <Label Grid.Column="0"
                    Text="Category:"
                    VerticalOptions="Center"
@@ -72,7 +70,7 @@
                Text="{Binding ErrorMessage}"
                TextColor="Red"
                IsVisible="{Binding ErrorMessage,
-                   Converter={StaticResource StringToBoolConverter}}"
+                Converter={StaticResource StringToBoolConverter}}"
                HorizontalOptions="Center"
                Margin="16" />
 

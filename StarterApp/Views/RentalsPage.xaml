@@ -121,7 +121,6 @@
 
         <!-- Incoming rentals (Item Requests) -->
         <RefreshView Grid.Row="3"
-                     IsRefreshing="{Binding IsBusy}"
                      Command="{Binding LoadRentalsCommand}"
                      IsVisible="{Binding ShowingIncoming}">
             <CollectionView ItemsSource="{Binding IncomingRentals}">

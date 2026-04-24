@@ -51,6 +51,10 @@ public partial class ItemsListViewModel : ObservableObject
     [ObservableProperty]
     private bool _isBusy;
 
+    /// <summary>Gets or sets a value indicating whether a pull-to-refresh is in progress.</summary>
+    [ObservableProperty]
+    private bool _isRefreshing;
+
     /// <summary>Gets or sets a value indicating whether the filtered list is empty.</summary>
     [ObservableProperty]
     private bool _isEmpty;
@@ -87,6 +91,7 @@ public partial class ItemsListViewModel : ObservableObject
         if (IsBusy) return;
 
         IsBusy = true;
+        IsRefreshing = true;
         IsEmpty = false;
 
         try
@@ -120,6 +125,7 @@ public partial class ItemsListViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+            IsRefreshing = false;
         }
     }
 
