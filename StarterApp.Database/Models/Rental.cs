@@ -114,4 +114,18 @@ public class Rental
     /// </summary>
     public string OverdueMessage =>
         IsOverdue ? $"Overdue since {DateTime.Parse(EndDate):dd MMM yyyy}" : string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether a review has been submitted
+    /// for this rental in the current session. This is a client-side only
+    /// flag and is not persisted to the API.
+    /// </summary>
+    public bool HasBeenReviewed { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the Leave a Review button should be
+    /// displayed for this rental. Returns true only when the rental is
+    /// Completed and no review has been submitted in the current session.
+    /// </summary>
+    public bool CanLeaveReview => Status == "Completed" && !HasBeenReviewed;
 }

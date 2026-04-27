@@ -42,6 +42,13 @@ public partial class RentalsViewModel : ObservableObject
     public bool ShowingIncoming => !ShowingOutgoing;
 
     /// <summary>
+    /// Tracks rental IDs for which a review has been submitted in the current
+    /// session. Used to hide the Leave a Review button after submission without
+    /// requiring an additional API call to check review status.
+    /// </summary>
+    private readonly HashSet<int> _reviewedRentalIds = new();
+
+    /// <summary>
     /// Initialises a new instance of <see cref="RentalsViewModel"/>.
     /// </summary>
     /// <param name="rentalService">The service providing rental business logic.</param>
@@ -148,7 +155,7 @@ public partial class RentalsViewModel : ObservableObject
         {
             var success = await operation();
             if (success)
-                await LoadRentalsAsync();
+                await ReloadRentalsAsync();
             else
                 ErrorMessage = failureMessage;
         }
@@ -162,7 +169,40 @@ public partial class RentalsViewModel : ObservableObject
         }
     }
 
-    /// <summary>Navigates to the Submit Review page for a completed rental.</summary>
+    /// <summary>
+    /// Reloads rentals from the service without checking IsBusy.
+    /// Used internally after status updates to refresh the UI immediately.
+    /// Reapplies the session-level reviewed state to outgoing rentals
+    /// so the Leave a Review button remains hidden after submission.
+    /// </summary>
+    private async Task ReloadRentalsAsync()
+    {
+        try
+        {
+            var outgoing = await _rentalService.GetOutgoingRentalsAsync();
+
+            // Reapply reviewed state from this session
+            foreach (var rental in outgoing)
+                rental.HasBeenReviewed = _reviewedRentalIds.Contains(rental.Id);
+
+            OutgoingRentals = new ObservableCollection<Rental>(outgoing);
+
+            var incoming = await _rentalService.GetIncomingRentalsAsync();
+            IncomingRentals = new ObservableCollection<Rental>(incoming);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to reload rentals: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"ReloadRentals error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Navigates to the Submit Review page for a completed rental.
+    /// After returning from the review page, marks the rental as reviewed
+    /// in the current session and reloads the rentals list to update the UI.
+    /// </summary>
+    /// <param name="rental">The completed rental to review.</param>
     [RelayCommand]
     private async Task NavigateToReviewAsync(Rental rental)
     {
@@ -171,7 +211,19 @@ public partial class RentalsViewModel : ObservableObject
             ErrorMessage = "Reviews can only be submitted for completed rentals.";
             return;
         }
+
         await Shell.Current.GoToAsync(
             $"submitreview?rentalId={rental.Id}&itemTitle={Uri.EscapeDataString(rental.ItemTitle)}");
+
+        // After returning from the review page, mark as reviewed and reload
+        _reviewedRentalIds.Add(rental.Id);
+        await ReloadRentalsAsync();
+
+        // Mark the rental as reviewed in the reloaded collection
+        var reviewed = OutgoingRentals.FirstOrDefault(r => r.Id == rental.Id);
+        if (reviewed != null)
+            reviewed.HasBeenReviewed = true;
     }
+
+    
 }

@@ -44,6 +44,24 @@ public class ApiService : IApiService
         }
     }
 
+    /// <summary>
+    /// Checks an HTTP response for a 401 Unauthorized status and redirects
+    /// to the login page if the token has expired or is invalid.
+    /// </summary>
+    /// <param name="response">The HTTP response to check.</param>
+    /// <returns>True if the response was a 401 and the user has been redirected.</returns>
+    private async Task<bool> HandleUnauthorizedAsync(HttpResponseMessage response)
+    {
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            System.Diagnostics.Debug.WriteLine("401 Unauthorized — token expired, redirecting to login");
+            await _authService.LogoutAsync();
+            await Shell.Current.GoToAsync("//login");
+            return true;
+        }
+        return false;
+    }
+
     /// <inheritdoc/>
     public async Task<List<Item>> GetItemsAsync()
     {
@@ -75,6 +93,7 @@ public class ApiService : IApiService
 
         if (!response.IsSuccessStatusCode)
         {
+            if (await HandleUnauthorizedAsync(response)) return null;
             var errorContent = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Debug.WriteLine(
                 $"CreateItem failed: {response.StatusCode} - {errorContent}");
@@ -97,7 +116,10 @@ public class ApiService : IApiService
         });
 
         if (!response.IsSuccessStatusCode)
+        {
+            if (await HandleUnauthorizedAsync(response)) return null;
             return null;
+        }
 
         return await response.Content.ReadFromJsonAsync<Item>();
     }
@@ -151,6 +173,7 @@ public class ApiService : IApiService
 
         if (!response.IsSuccessStatusCode)
         {
+            if (await HandleUnauthorizedAsync(response)) return null;
             var error = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Debug.WriteLine($"CreateRental failed: {response.StatusCode} - {error}");
             return null;
@@ -186,6 +209,7 @@ public class ApiService : IApiService
 
         if (!response.IsSuccessStatusCode)
         {
+            if (await HandleUnauthorizedAsync(response)) return false;
             var error = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Debug.WriteLine(
                 $"UpdateRentalStatus failed: {response.StatusCode} - {error}");
@@ -208,6 +232,7 @@ public class ApiService : IApiService
 
         if (!response.IsSuccessStatusCode)
         {
+            if (await HandleUnauthorizedAsync(response)) return null;
             var error = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Debug.WriteLine($"SubmitReview failed: {response.StatusCode} - {error}");
             return null;

@@ -17,24 +17,24 @@ public class RequestRentalViewModelTests
     }
 
     [Fact]
-    public void StartDate_DefaultsToTomorrow()
+    public void StartDate_DefaultsToToday()
     {
         // Assert
-        Assert.Equal(DateTime.Today.AddDays(1), _viewModel.StartDate);
+        Assert.Equal(DateTime.Today, _viewModel.StartDate);
     }
 
     [Fact]
-    public void EndDate_DefaultsToTwoDaysFromNow()
+    public void EndDate_DefaultsToTomorrow()
     {
         // Assert
-        Assert.Equal(DateTime.Today.AddDays(2), _viewModel.EndDate);
+        Assert.Equal(DateTime.Today.AddDays(1), _viewModel.EndDate);
     }
 
     [Fact]
-    public void MinDate_IsTomorrow()
+    public void MinDate_IsToday()
     {
         // Assert
-        Assert.Equal(DateTime.Today.AddDays(1), _viewModel.MinDate);
+        Assert.Equal(DateTime.Today, _viewModel.MinDate);
     }
 
     [Fact]

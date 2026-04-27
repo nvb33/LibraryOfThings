@@ -60,6 +60,7 @@
                        Placeholder="Email"
                        Keyboard="Email"
                        ReturnType="Next"
+                       ClearButtonVisibility="WhileEditing"
                        Margin="15,10" />
             </Border>
 
@@ -76,6 +77,7 @@
                        Placeholder="Password"
                        IsPassword="True"
                        ReturnType="Done"
+                       ClearButtonVisibility="WhileEditing"
                        Margin="15,10" />
             </Border>
 

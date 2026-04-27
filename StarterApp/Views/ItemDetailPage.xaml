@@ -70,7 +70,7 @@
                 <!-- Request rental button -->
                 <Button Text="Request Rental"
                         Command="{Binding RequestRentalCommand}"
-                        IsVisible="{Binding Item.IsAvailable}"
+                        IsVisible="{Binding CanRequestRental}"
                         BackgroundColor="#512BD4"
                         TextColor="White"
                         Margin="0,8" />

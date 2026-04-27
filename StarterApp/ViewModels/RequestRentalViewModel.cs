@@ -18,12 +18,20 @@ public partial class RequestRentalViewModel : ObservableObject
     private int _itemId;
 
     /// <summary>Gets or sets the desired start date. Defaults to tomorrow.</summary>
-    [ObservableProperty]
-    private DateTime _startDate = DateTime.Today.AddDays(1);
+    ///[ObservableProperty]
+    ///private DateTime _startDate = DateTime.Today.AddDays(1);
 
     /// <summary>Gets or sets the desired end date. Defaults to two days from now.</summary>
+    ///[ObservableProperty]
+    ///private DateTime _endDate = DateTime.Today.AddDays(2);
+
+    /// <summary>Gets or sets the desired start date. Defaults to today.</summary>
     [ObservableProperty]
-    private DateTime _endDate = DateTime.Today.AddDays(2);
+    private DateTime _startDate = DateTime.Today;
+
+    /// <summary>Gets or sets the desired end date. Defaults to tomorrow.</summary>
+    [ObservableProperty]
+    private DateTime _endDate = DateTime.Today.AddDays(1);
 
     /// <summary>Gets or sets a value indicating whether an operation is in progress.</summary>
     [ObservableProperty]
@@ -34,7 +42,10 @@ public partial class RequestRentalViewModel : ObservableObject
     private string _errorMessage = string.Empty;
 
     /// <summary>Gets the minimum selectable date, which is tomorrow.</summary>
-    public DateTime MinDate => DateTime.Today.AddDays(1);
+    ///public DateTime MinDate => DateTime.Today.AddDays(1);
+
+    /// <summary>Gets the minimum selectable date, which is today. THIS IS FOR TESTING ONLY</summary>
+    public DateTime MinDate => DateTime.Today;
 
     /// <summary>
     /// Initialises a new instance of <see cref="RequestRentalViewModel"/>.
@@ -73,7 +84,7 @@ public partial class RequestRentalViewModel : ObservableObject
                     "Your rental request has been submitted. " +
                     "The owner will review it shortly.",
                     "OK");
-                await Shell.Current.GoToAsync("..");
+                await Shell.Current.GoToAsync("../..");
             }
             else
             {
