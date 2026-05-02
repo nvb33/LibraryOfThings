@@ -181,6 +181,14 @@ public partial class RegisterViewModel : BaseViewModel
     private static bool IsValidEmail(string email)
     {
         const string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
-        return Regex.IsMatch(email, emailPattern, RegexOptions.IgnoreCase);
+        try
+        {
+            return Regex.IsMatch(email, emailPattern, RegexOptions.IgnoreCase,
+                TimeSpan.FromMilliseconds(250));
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
     }
 }
