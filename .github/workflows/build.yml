@@ -24,9 +24,6 @@ jobs:
       - name: Install SonarCloud scanner
         run: dotnet tool install --global dotnet-sonarscanner
 
-      - name: Install coverage tool
-        run: dotnet tool install --global dotnet-coverage
-
       - name: Restore workloads
         run: dotnet workload restore ./StarterApp/StarterApp.csproj
 
@@ -42,7 +39,7 @@ jobs:
             /o:"nvb33" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
+            /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
             /d:sonar.exclusions="**/obj/**,**/bin/**,**/Migrations/**,**/*.xaml"
 
       - name: Build project
@@ -50,10 +47,10 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          dotnet-coverage collect \
-            "dotnet test ./StarterApp.Tests/StarterApp.Tests.csproj --framework net10.0" \
-            -f xml \
-            -o coverage.opencover.xml
+          dotnet test ./StarterApp.Tests/StarterApp.Tests.csproj \
+            --framework net10.0 \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
       - name: End SonarCloud analysis
         env:
