@@ -41,7 +41,7 @@ LibraryOfThings/
 │   │   └── Repositories/           # IRepository<T> and domain-specific interfaces
 │   └── Models/                     # Item, Rental, Review, User, Category etc.
 ├── StarterApp.Migrations/          # EF Core database migrations
-├── StarterApp.Tests/               # xUnit test project (91 tests)
+├── StarterApp.Tests/               # xUnit test project (139 tests)
 ├── docker-compose.yml              
 ├── .gitignore
 ├── README.md
@@ -124,7 +124,7 @@ adb install -r StarterApp/bin/Debug/net10.0-android/com.companyname.starterapp-S
 dotnet test StarterApp.Tests
 ```
 
-Expected output: **91 tests, 0 failures**
+Expected output: **139 tests, 0 failures**
 
 To run with detailed output:
 
@@ -217,7 +217,7 @@ The project uses GitHub Actions with two workflows:
 4. Restore workloads and dependencies
 5. Begin SonarCloud analysis
 6. Build project
-7. Run 91 unit tests with coverage collection
+7. Run 139 unit tests with coverage collection
 8. End SonarCloud analysis — results uploaded to sonarcloud.io
 9. Build Android APK
 10. Upload APK as downloadable artifact
