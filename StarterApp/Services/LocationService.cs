@@ -19,13 +19,11 @@ public class LocationService : ILocationService
     /// </returns>
     public async Task<(double Latitude, double Longitude)?> GetCurrentLocationAsync()
     {
-        // Temporary: hardcoded Edinburgh coordinates for emulator testing
-        // TODO: Remove this and uncomment the GPS code below before submission
-        await Task.CompletedTask;
-        return (55.9533, -3.1883);
+        // Hardcoded Edinburgh coordinates for emulator testing
+        //await Task.CompletedTask;
+        //return (55.9533, -3.1883);
 
         // GPS implementation
-        /*
         try
         {
             var location = await Geolocation.GetLocationAsync(new GeolocationRequest
@@ -54,6 +52,5 @@ public class LocationService : ILocationService
             System.Diagnostics.Debug.WriteLine($"Location error: {ex.Message}");
             return null;
         }
-        */
     }
 }
