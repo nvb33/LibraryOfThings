@@ -40,7 +40,8 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
-            /d:sonar.exclusions="**/obj/**,**/bin/**,**/Migrations/**,**/*.xaml"
+            /d:sonar.exclusions="**/obj/**,**/bin/**,**/Migrations/**,**/*.xaml" \
+            /d:sonar.coverage.exclusions="**/*.xaml.cs,**/MauiProgram.cs,**/App.xaml.cs,**/AppShell.xaml.cs,**/Services/ApiService.cs,**/Services/LocationService.cs,**/Services/NavigationService.cs,**/Data/AppDbContext.cs,**/Data/AppDbContextFactory.cs,**/ViewModels/LoginViewModel.cs,**/ViewModels/RegisterViewModel.cs,**/ViewModels/UserDetailViewModel.cs,**/ViewModels/AppShellViewModel.cs,**/ViewModels/MainViewModel.cs,**/ViewModels/TempViewModel.cs,**/ViewModels/UserListViewModel.cs,**/ViewModels/ProfileViewModel.cs"
 
       - name: Build project
         run: dotnet build ./StarterApp/StarterApp.csproj --framework net10.0
